@@ -51,14 +51,15 @@ socket.on('newMessage', (data) => {
 socket.on('addusername', (users) => {
     var userString = users.join(', ')
     userString = userString.replace(name, "Me")
-    
+
     $('.panel-title').text(userString)
 })
 
 
 
 
-$(document).on('click', "#btn-chat", () => {
+// $(document).on('click', "#btn-chat", )
+$('#chat-box').on('submit', () => {
 
     if (!name) {
         console.log('name: ', name);
@@ -67,11 +68,16 @@ $(document).on('click', "#btn-chat", () => {
     }
     let text = $('#btn-input').val()
     socket.emit('sendMessage', { text: text, name: name })
+    $('#btn-input').val('')
     console.log(text)
+    return false
 })
 
-$(document).on('click', "#btn-name", () => {
+
+$('#name-picker').on('submit', () => {
     name = $('#name-input').val()
     socket.emit('startChat', { name })
-
+    return false
 })
+
+// $(document).on('click', "#btn-name")
