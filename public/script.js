@@ -71,7 +71,7 @@ $(document).on('click', "#btn-chat", () => {
 })
 
 $(document).on('click', "#btn-name", () => {
-    name = $('#btn-name').val()
+    name = $('#name-input').val()
     socket.emit('startChat', { name })
 
 })
