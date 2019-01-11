@@ -10,6 +10,7 @@ let app = express();
 let server = http.createServer(app)
 let io = socketIO(server)
 let rooms = {}
+let messages = []
 
 io.on("connection", (socket) => {
   console.log('new user connected');
@@ -24,12 +25,16 @@ io.on("connection", (socket) => {
         const room = rooms[key];
         let user = room.getUser(socket.id)
         if (user !== null) {
-
-          io.to(key).emit('newMessage', {
+          let message = {
             createdAt: new Date().toLocaleTimeString(),
             text: messageData.text,
             name: user.name
-          })
+          }
+          if (messageData.hID && messages[parseInt(messageData.hID)]) {
+            message.quoted = messages[parseInt(messageData.hID)]
+          }
+          let index = messages.push(message) - 1;
+          io.to(key).emit('newMessage', { id: index, ...message })
           callback()
           return
         }

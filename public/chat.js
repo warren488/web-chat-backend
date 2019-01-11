@@ -1,6 +1,7 @@
 // for some reason normal var doesnt work here
 let name = undefined
 let chatName
+var hID = null
 
 function scrollBottom() {
 
@@ -40,17 +41,29 @@ socket.on("disconnect", () => {
 
 socket.on('newMessage', data => {
 
-    var template = $('#message-template').html()
-    var html = Mustache.render(template, {
+    var template
+    templateData = {
         text: data.text,
         from: data.name,
-        createdAt: data.createdAt
-    })
+        createdAt: data.createdAt,
+        id: `msg-${data.id}`
+    }
+    if (data.quoted) {
+        templateData.quotedFrom = data.quoted.name
+        templateData.quotedAt = data.quoted.createdAt
+        templateData.quotedMessage = data.quoted.text
+        template = $('#message-quote').html()
+    } else {
+        template = $('#message-template').html()
+    }
+    var html = Mustache.render(template, templateData)
     console.log(data)
     // let name = $.deparam(window.location.search).name
     // let chatChild = document.createElement('li')
     // chatChild.innerHTML = `${(data.name === name) ? 'me' : data.name}: ${data.text}`
-    $('#messages').html($('#messages').html() + html)
+    $('#messages')
+        .html($('#messages').html() + html)
+        // .hover(messageHoverIn, messageHoverOut)
 
     scrollBottom()
 
@@ -82,8 +95,9 @@ $('#message-form').on('submit', () => {
     // }
     let text = $('#msg-txt').val()
     if (text.trim().length > 0) {
-        socket.emit('sendMessage', { text: text, name: $.deparam(window.location.search).name }, () => console.log('message sent'))
+        socket.emit('sendMessage', { hID, text: text, name: $.deparam(window.location.search).name }, () => console.log('message sent'))
         $('#msg-txt').val('')
+        cancelReply()
     }
 
     return false
@@ -96,3 +110,36 @@ $('#name-picker').on('submit', () => {
     return false
 })
 
+function messageHoverIn() {
+    console.log('hoverin');
+    
+    $(this).find('.reply').addClass('reply-highlight')
+}
+
+function messageHoverOut() {
+    $(this).find('.reply').removeClass('reply-highlight')
+
+}
+var replyClick = (e) => {
+    if (hID) {
+        cancelReply()
+        return replyClick(e)
+    }
+    var message = $(e).parent().parent()
+    hID = message.prop('id').replace('msg-', '')
+    message.addClass('highlighted')
+    $('#cancel-reply').removeClass('no-show')
+    $('#send-button').text('Reply')
+    $('#msg-txt').attr('placeholder', 'reply to message...')
+    $('#msg-txt').focus()
+    // $('#message-form').append(cancelHtml)
+}
+
+
+function cancelReply() {
+    $('#cancel-reply').addClass('no-show')
+    $(`#msg-${hID}`).removeClass('highlighted')
+    $('#send-button').text('Send')
+    $('#msg-txt').attr('placeholder', 'send message...')
+    hID = null
+}
