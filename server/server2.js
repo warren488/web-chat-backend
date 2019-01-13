@@ -29,7 +29,6 @@ app.get('/signup', (req, res) => {
   res.sendFile(path.join(__dirname + '/../views/signup.html'));
 })
 app.get('/home', HTMLauthenticate, (req, res) => {
-  console.log(req.user);
   let friends = req.user.friends.map(({ _id, username }) => ({ _id, username }))
   res.render('home.hbs', {
     friends: friends
@@ -47,7 +46,6 @@ app.get('/users/me/:friendship_id', HTMLauthenticate, async (req, res) => {
     return returnVal
   })
   let { messages } = await req.user.findUniqueChat(req.params.friendship_id, 'friendship_id')
-  console.log(messages);
   res.render('chat.hbs', {
     friends: friends,
     messages

@@ -109,7 +109,9 @@ userSchema.methods.validateSchema = async (schema) => {
 }
 
 userSchema.methods.generateAuthToken = async function generateAuthToken() {
-    let token = jwt.sign({ _id: this._id }, bcrypt.genSalt())
+    console.log(SALT);
+    
+    let token = jwt.sign({ _id: this._id }, SALT)
     this.tokens = this.tokens.concat([{
         access: 'auth',
         token

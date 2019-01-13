@@ -75,11 +75,14 @@ async function HTMLauthenticate(req, res, next) {
     let token = req.cookies.token;
     let user
     try {
+        console.log(token)
         user = await User.findByToken(token)
+        console.log(user)
         if (!user) {
             throw 'not fond'
         }
     } catch (error) {
+        console.log(error)
         return res.redirect(303, '/login')
 
     }
