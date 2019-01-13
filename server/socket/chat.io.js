@@ -13,26 +13,32 @@ module.exports = async function (io, friendship_id, user, activeUsers) {
 
         socket.on('sendMessage', async (messageData, callback) => {
 
-            let message = {
-                createdAt: new Date().getTime(),
-                text: messageData.text,
-                from: user.username
-            }
-            if (messageData.hID) {
-                let quoted = await user.getMessage(friendship_id, messageData.hID)
-                if (quoted) {
-                    message.quoted = quoted
-                }
-            }
-            let msgId = await user.addMessage(friendship_id, message);
+            try {
 
-            // this will actually search by the friendship id
-            let { id } = await user.findFriend(friendship_id, '_id')
-            let friend = await User.findById(id)
-            await friend.addMessage(friendship_id, message)
-            io.to(friendship_id).emit('newMessage', { id: msgId, ...message })
-            callback()
-            return
+
+                let message = {
+                    createdAt: new Date().getTime(),
+                    text: messageData.text,
+                    from: user.username
+                }
+                if (messageData.hID) {
+                    let quoted = await user.getMessage(friendship_id, messageData.hID)
+                    if (quoted) {
+                        message.quoted = quoted
+                    }
+                }
+                let msgId = await user.addMessage(friendship_id, message);
+
+                // this will actually search by the friendship id
+                let { id } = await user.findFriend(friendship_id, '_id')
+                let friend = await User.findById(id)
+                await friend.addMessage(friendship_id, message)
+                io.to(friendship_id).emit('newMessage', { id: msgId, ...message })
+                callback()
+                return
+            } catch (error) {
+                console.log(error)
+            }
         })
     })
 

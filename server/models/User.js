@@ -110,7 +110,7 @@ userSchema.methods.validateSchema = async (schema) => {
 
 userSchema.methods.generateAuthToken = async function generateAuthToken() {
     console.log(SALT);
-    
+
     let token = jwt.sign({ _id: this._id }, SALT)
     this.tokens = this.tokens.concat([{
         access: 'auth',
@@ -176,7 +176,11 @@ userSchema.methods.findFriend = async function findFriend(val, propertyname) {
 
 userSchema.methods.getMessage = async function getMessage(friendship_id, msgId) {
     let chatIndex = await this.findUniqueChatIndex(friendship_id, 'friendship_id')
-    console.log(chatIndex)
+    if (chatIndex === -1) {
+        await this.startChat({ friendship_id, messages: [] })
+        chatIndex = await this.findUniqueChatIndex(friendship_id, 'friendship_id')
+    }
+
     return this.chats[chatIndex].messages.find(message => {
         if (message) {
             return message._id.toString() === msgId
