@@ -1,15 +1,22 @@
 let User = require('../models/User')
 
-module.exports = async function (io, friendship_id, user, activeUsers) {
+module.exports = async function ioconnection(io, friendship_id, user, activeUsers) {
     io.on("connection", async socket => {
 
-        activeUsers[socket.id] = user._id.toString()
-        let chat = await user.findUniqueChat(friendship_id, 'friendship_id')
-        if (!chat) {
-            throw ({ message: "chat not found" })
-        }
-        socket.join(friendship_id)
+        console.log('here');
 
+        activeUsers[socket.id] = user._id.toString()
+        console.log('here2');
+        try {
+
+            let chat = await user.findUniqueChat(friendship_id, 'friendship_id')
+            if (!chat) {
+                throw ({ message: "chat not found" })
+            }
+            socket.join(friendship_id)
+        } catch (error) {
+            console.log(error)
+        }
 
         socket.on('sendMessage', async (messageData, callback) => {
 
