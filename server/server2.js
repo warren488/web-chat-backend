@@ -45,10 +45,13 @@ app.get('/users/me/:friendship_id', HTMLauthenticate, async (req, res) => {
     }
     return returnVal
   })
-  let { messages } = await req.user.findUniqueChat(req.params.friendship_id, 'friendship_id')
+  let currentChat = await req.user.findUniqueChat(req.params.friendship_id, 'friendship_id')
+  if(!currentChat){
+    currentChat = await req.user.startChat({friendship_id: req.params.friendship_id, messages: []})
+  }
   res.render('chat.hbs', {
     friends: friends,
-    messages
+    messages: currentChat.messages
   })
 })
 
