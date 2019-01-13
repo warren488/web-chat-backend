@@ -37,22 +37,27 @@ app.get('/home', HTMLauthenticate, (req, res) => {
 })
 
 app.get('/users/me/:friendship_id', HTMLauthenticate, async (req, res) => {
-  attachListeners(io, req.params.friendship_id, req.user, activeUsers)
-  let friends = req.user.friends.map(({ _id, username }) => {
-    let returnVal = { _id, username }
-    if (_id.toString() === req.params.friendship_id) {
-      returnVal.active = true
+  try {
+    attachListeners(io, req.params.friendship_id, req.user, activeUsers)
+    let friends = req.user.friends.map(({ _id, username }) => {
+      let returnVal = { _id, username }
+      if (_id.toString() === req.params.friendship_id) {
+        returnVal.active = true
+      }
+      return returnVal
+    })
+    let currentChat = await req.user.findUniqueChat(req.params.friendship_id, 'friendship_id')
+    if (!currentChat) {
+      currentChat = await req.user.startChat({ friendship_id: req.params.friendship_id, messages: [] })
     }
-    return returnVal
-  })
-  let currentChat = await req.user.findUniqueChat(req.params.friendship_id, 'friendship_id')
-  if(!currentChat){
-    currentChat = await req.user.startChat({friendship_id: req.params.friendship_id, messages: []})
+    res.render('chat.hbs', {
+      friends: friends,
+      messages: currentChat.messages
+    })
+  } catch (error) {
+    res.send('<h1>ERROR, WORKING TO FIX IT<h1>')
+    console.log(error)
   }
-  res.render('chat.hbs', {
-    friends: friends,
-    messages: currentChat.messages
-  })
 })
 
 app.use('/api', apiRouter)
