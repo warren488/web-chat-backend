@@ -162,7 +162,7 @@ button:disabled {
     margin: 5px;
 }
 
-.message:hover{
+.message:hover {
     background-color: #f6faff;
 }
 
@@ -204,7 +204,7 @@ button:disabled {
     margin-left: 5px;
 }
 
-.quoted{
+.quoted {
     background-color: rgb(202, 202, 202);
     display: inline-block;
     border: thin solid rgb(202, 202, 202);
@@ -214,43 +214,60 @@ button:disabled {
     width: 95%;
 }
 
-.highlighted, .highlighted:hover {
-    background-color: #698ea5;
+.highlighted,
+.highlighted:hover,
+li.highlighted {
+    background-color: #337ba8;
 }
-.no-show{
+
+.no-show {
     display: none
 }
 
-#cancel-reply{
+#cancel-reply {
     background-color: red;
 }
 
-.wrap{
+.wrap {
     word-wrap: break-word;
 }
 
-.reply-highlight{
+.reply-highlight {
     color: #999;
 }
-
-
-
 
 .dropdown {
     position: relative;
     display: inline-block;
-  }
-  
-  .dropdown-content {
+}
+
+.dropdown-content {
     display: none;
     position: absolute;
     background-color: #f9f9f9;
     min-width: 160px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
     padding: 12px 16px;
     z-index: 1;
-  }
-  
-  .dropdown:hover .dropdown-content {
+}
+
+.dropdown:hover .dropdown-content {
     display: block;
-  }
+}
+
+#add-friend,
+#friend-form {
+    max-width: 100%;
+}
+
+#fri-txt {
+    max-width: 69%;
+}
+
+#add-button {
+    max-width: 30%;
+}
+
+#users ul li {
+    cursor: pointer;
+}

@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node server/server.js",
+    "start": "nodemon -r ./node_modules/dotenv/config server/server.js dotenv_config_path=$(pwd)/.env",
+    "start2": "nodemon -r ./node_modules/dotenv/config server/server2.js dotenv_config_path=$(pwd)/.env",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "engines": {
@@ -13,7 +14,14 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.18.3",
+    "dotenv": "^6.2.0",
     "express": "^4.14.0",
-    "socket.io": "^2.2.0"
+    "hbs": "^4.0.1",
+    "jsonwebtoken": "^8.4.0",
+    "mongoose": "^5.4.3",
+    "socket.io": "^2.2.0",
+    "validator": "^10.10.0"
   }
 }

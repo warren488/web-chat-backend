@@ -3,7 +3,7 @@ const http = require('http')
 const express = require('express');
 const socketIO = require("socket.io")
 const apiRouter = require("./api")
-const attachListeners = require('./socket')
+const attachListeners = require('./socket/chat.io')
 const bodyParser = require("body-parser")
 const { HTMLauthenticate, authenticate } = require('./services')
 const cookieParser = require('cookie-parser')
@@ -19,7 +19,7 @@ const publicPath = path.join(__dirname, '../public');
 const port = process.env.PORT || 3000;
 const server = http.createServer(app)
 const io = socketIO(server)
-attachListeners(io)
+const activeUsers = {}
 
 app.use(express.static(publicPath));
 app.get('/login', (req, res) => {
@@ -37,17 +37,20 @@ app.get('/home', HTMLauthenticate, (req, res) => {
   // res.sendFile(path.join(__dirname + '/../views/home.hbs'));
 })
 
-app.get('/users/me/:friendship_id', HTMLauthenticate, (req, res) => {
+app.get('/users/me/:friendship_id', HTMLauthenticate, async (req, res) => {
+  attachListeners(io, req.params.friendship_id, req.user, activeUsers)
   let friends = req.user.friends.map(({ _id, username }) => {
     let returnVal = { _id, username }
-    if(_id.toString() === req.params.friendship_id){
+    if (_id.toString() === req.params.friendship_id) {
       returnVal.active = true
     }
     return returnVal
   })
+  let { messages } = await req.user.findUniqueChat(req.params.friendship_id, 'friendship_id')
+  console.log(messages);
   res.render('chat.hbs', {
     friends: friends,
-    messages: req.user.messages
+    messages
   })
 })
 

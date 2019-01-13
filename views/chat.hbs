@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Chat | ChatApp</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <link rel="stylesheet" href="/chat.css">
+</head>
+
+<body class="chat">
+
+    <div class="chat__sidebar">
+        <h3>People</h3>
+        <div class="chat__footer" id="add-friend">
+            <form id="friend-form">
+                <input type="text" id="fri-txt" name="username" placeholder="add friend..." autocomplete="off"
+                    autofocus>
+                <button id="add-button">Add</button>
+            </form>
+        </div>
+        <div id="users">
+            <ul>
+                {{#friends}}
+                <li {{#if active}} class="highlighted" {{/if}} onclick="startChat(this)" id="{{_id}}">{{username}}</li>
+                {{/friends}}
+            </ul>
+        </div>
+    </div>
+    <div class="chat__main">
+
+        <ol class="chat__messages" id="messages">
+            {{#each messages}}
+            <li class='message' id='{{_id}}'>
+                <div class='message__title'>
+                    <h4>{{from}}</h4>
+                    <span>{{createdAt}}</span>
+                    <p class='reply' onclick="replyClick(this)">reply</p>
+                    <!-- <div class="dropdown">
+                        <span>Mouse over me</span>
+                        <div class="dropdown-content">
+                        <p>Hello World!</p>
+                        </div>
+                      </div> -->
+                </div>
+                <div class="message__body">
+                    <p class="wrap">{{text}}</p>
+                    {{#if quoted}}
+                    {{#quoted}}
+                    <span class="quoted">
+                        <div class='message__title'>
+                            <h4>{{from}}</h4>
+                            <span>{{createdAt}}</span>
+                        </div>
+                        <p class="wrap">{{text}}</p>
+                    </span>
+                    {{/quoted}}
+                    {{/if}}
+                </div>
+            </li>
+            {{/each}}
+        </ol>
+        <div class="chat__footer">
+            <form id="message-form">
+                <input type="text" id="msg-txt" name="message" placeholder="send message..." autocomplete="off"
+                    autofocus>
+                <button id="send-button">Send</button>
+                <button class="no-show" onclick="cancelReply(this)" id="cancel-reply">X</button>
+            </form>
+        </div>
+    </div>
+
+
+    {{!-- <script id="message-template" type="text/template">
+        <li class='message' id='{{id}}'>
+            <div class='message__title'>
+                <h4>{{from}}</h4>
+                <span>{{createdAt}}</span>
+                <p class='reply' onclick="replyClick(this)">reply</p>
+                <!-- <div class="dropdown">
+                        <span>Mouse over me</span>
+                        <div class="dropdown-content">
+                        <p>Hello World!</p>
+                        </div>
+                      </div> -->
+            </div>
+            <div class="message__body">
+                <p class="wrap">{{text}}</p> 
+            </div>
+        </li>
+    </script>
+
+    <script id="message-quote" type="text/template">
+        <li class='message' id='{{id}}'>
+            <div class='message__title'>
+                <h4>{{from}}</h4>
+                <span>{{createdAt}}</span>
+                <p class='reply' onclick="replyClick(this)" >reply</p>
+                <!-- <div class="dropdown">
+                        <span>Mouse over me</span>
+                        <div class="dropdown-content">
+                        <p>Hello World!</p>
+                        </div>
+                      </div> -->
+            </div>
+            <div class="message__body">
+                <p class="wrap"> {{text}}</p>
+                <span class="quoted">
+                    <div class='message__title'>
+                        <h4>{{quotedFrom}}</h4>
+                        <span>{{quotedAt}}</span>
+                    </div> 
+                    <p class="wrap">{{quotedMessage}}</p>
+                    
+                </span>
+            </div>
+        </li>
+    </script>  --}}
+
+    <script src="//code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/mustache.min.js"></script>
+    <script src="/deparam.js"></script>
+    <script src="/util.js"></script>
+    <script src="/auth-chat.js"></script>
+    <!-- <script src="./deparam.js"></script>
+    <script src="./chat.js"></script> -->
+</body>
+
+</html>

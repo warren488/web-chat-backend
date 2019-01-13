@@ -63,7 +63,7 @@ socket.on('newMessage', data => {
     // chatChild.innerHTML = `${(data.name === name) ? 'me' : data.name}: ${data.text}`
     $('#messages')
         .html($('#messages').html() + html)
-        // .hover(messageHoverIn, messageHoverOut)
+    // .hover(messageHoverIn, messageHoverOut)
 
     scrollBottom()
 
@@ -96,6 +96,7 @@ $('#message-form').on('submit', () => {
     let text = $('#msg-txt').val()
     if (text.trim().length > 0) {
         socket.emit('sendMessage', { hID, text: text, name: $.deparam(window.location.search).name }, () => console.log('message sent'))
+        $('#msg-txt').focus()
         $('#msg-txt').val('')
         cancelReply()
     }
@@ -112,7 +113,7 @@ $('#name-picker').on('submit', () => {
 
 function messageHoverIn() {
     console.log('hoverin');
-    
+
     $(this).find('.reply').addClass('reply-highlight')
 }
 
