@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon -r ./node_modules/dotenv/config server/server.js dotenv_config_path=$(pwd)/.env",
+    "start": "node -r ./node_modules/dotenv/config server/server.js dotenv_config_path=$(pwd)/.env",
+    "startw": "nodemon -r ./node_modules/dotenv/config server/server.js dotenv_config_path=$(pwd)/.env",
     "start2": "nodemon -r ./node_modules/dotenv/config server/server2.js dotenv_config_path=$(pwd)/.env",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
