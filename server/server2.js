@@ -38,7 +38,7 @@ app.get('/home', HTMLauthenticate, (req, res) => {
 
 app.get('/users/me/:friendship_id', HTMLauthenticate, async (req, res) => {
   try {
-    attachListeners(io, req.params.friendship_id, req.user, activeUsers)
+    attachListeners(io, req.params.friendship_id, req.cookies.token, activeUsers)
     let friends = req.user.friends.map(({ _id, username }) => {
       let returnVal = { _id, username }
       if (_id.toString() === req.params.friendship_id) {

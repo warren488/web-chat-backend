@@ -1,7 +1,8 @@
 let User = require('../models/User')
 
-module.exports = async function ioconnection(io, friendship_id, user, activeUsers) {
+module.exports = async function ioconnection(io, friendship_id, token, activeUsers) {
     io.on("connection", async socket => {
+        let user = await User.findByToken(token)
 
         console.log('here');
 
