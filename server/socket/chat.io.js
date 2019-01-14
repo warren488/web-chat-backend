@@ -24,6 +24,7 @@ module.exports = async function ioconnection(io, friendship_id, token, activeUse
         }
 
         socket.on('sendMessage', async (messageData, callback) => {
+            let user = await User.findByToken(token)
 
             try {
 
