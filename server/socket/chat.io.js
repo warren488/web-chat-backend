@@ -1,4 +1,5 @@
 let User = require('../models/User')
+const mongoose = require("mongoose")
 
 module.exports = async function ioconnection(io, friendship_id, token, activeUsers) {
     io.on("connection", async socket => {
@@ -7,11 +8,11 @@ module.exports = async function ioconnection(io, friendship_id, token, activeUse
 
 
         let user
-        if(socket.id in activeUsers){
+        if (socket.id in activeUsers) {
             // this very much needs to ensure unused sokets are deleted
             // OR that the ids are never reused(idk but unlikely)
             user = await User.findByToken(activeUsers[socket.id])
-        }else{
+        } else {
             user = await User.findByToken(token)
             activeUsers[socket.id] = user._id.toString()
         }
@@ -35,8 +36,6 @@ module.exports = async function ioconnection(io, friendship_id, token, activeUse
 
         socket.on('sendMessage', async function sendMessage(messageData, callback) {
             let user = await User.findById(activeUsers[socket.id])
-            console.trace()
-            console.log('called by ' + user.username + '(' + socket.id + ') with: ');
             console.log(messageData);
             try {
                 let message = {
@@ -50,15 +49,16 @@ module.exports = async function ioconnection(io, friendship_id, token, activeUse
                         message.quoted = quoted
                     }
                 }
-                let msgId = await user.addMessage(friendship_id, message);
+                let msgId = mongoose.Types.ObjectId()
+                await user.addMessage(friendship_id, { _id: msgId, ...message });
 
                 // this will actually search by the friendship id
                 let { id } = await user.findFriend(friendship_id, '_id')
                 let friend = await User.findById(id)
-                await friend.addMessage(friendship_id, message)
+                await friend.addMessage(friendship_id, { _id: msgId, ...message })
                 io.to(friendship_id).emit('newMessage', { id: msgId, ...message })
-                callback()
-                return
+                return callback()
+                
             } catch (error) {
                 console.log(error)
             }

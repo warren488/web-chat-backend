@@ -16,7 +16,7 @@ socket.on('newMessage', data => {
         id: `msg-${data.id}`
     }
     if (data.quoted) {
-        templateData.quotedFrom = data.quoted.name
+        templateData.quotedFrom = data.quoted.from
         templateData.quotedAt = data.quoted.createdAt
         templateData.quotedMessage = data.quoted.text
         template = messageQuoteTemplate

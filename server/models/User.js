@@ -178,8 +178,9 @@ userSchema.methods.findFriend = async function findFriend(val, propertyname) {
 userSchema.methods.getMessage = async function getMessage(friendship_id, msgId) {
     let chatIndex = await this.findUniqueChatIndex(friendship_id, 'friendship_id')
     if (chatIndex === -1) {
-        await this.startChat({ friendship_id, messages: [] })
-        chatIndex = await this.findUniqueChatIndex(friendship_id, 'friendship_id')
+        // await this.startChat({ friendship_id, messages: [] })
+        // chatIndex = await this.findUniqueChatIndex(friendship_id, 'friendship_id')
+        throw ({message: 'cannot find chat'})
     }
 
     return this.chats[chatIndex].messages.find(message => {
