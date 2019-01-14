@@ -109,7 +109,6 @@ userSchema.methods.validateSchema = async (schema) => {
 }
 
 userSchema.methods.generateAuthToken = async function generateAuthToken() {
-    console.log(SALT);
 
     let token = jwt.sign({ _id: this._id }, SALT)
     this.tokens = this.tokens.concat([{
@@ -123,10 +122,8 @@ userSchema.methods.generateAuthToken = async function generateAuthToken() {
 userSchema.methods.startChat = async function startChat(chat) {
     //  TODO: MAKE SURE THAT THE USER IS A FRIEND FIRST
     // check for existing chat first
-    console.trace()
     let newChat = await this.findUniqueChat(chat.friendship_id, 'friendship_id')
     if (!newChat) {
-        console.log('start chat had to concat a new chat');
         
         newChat = { _id: new mongoose.Types.ObjectId(), ...chat }
         this.newChat = this.chats.concat([newChat])
@@ -157,8 +154,6 @@ userSchema.methods.findUniqueChat = async function findUniqueChat(val, propertyn
     let chats = this.chats.filter((chat, index) => {
         if (chat) {
 
-            console.log(chat[propertyname].toString() + ' === ' + val);
-            console.log(chat[propertyname].toString() === val);
             return chat[propertyname].toString() === val
         }
         return false
@@ -173,7 +168,6 @@ userSchema.methods.findUniqueChat = async function findUniqueChat(val, propertyn
 userSchema.methods.findFriend = async function findFriend(val, propertyname) {
     let friend = this.friends.find(friend => {
         if (friend) {
-            console.log(friend[propertyname].toString() + ' === ' + val)
             return friend[propertyname].toString() === val
         }
         return false
@@ -201,8 +195,6 @@ userSchema.methods.findUniqueChatIndex = async function findUniqueChat(val, prop
     // method doesnt actually ensure uniqueness, rather it only returns one value 
     let index = this.chats.findIndex((chat, index) => {
         if (chat) {
-            console.log(chat[propertyname].toString() + ' === ' + val);
-            console.log(chat[propertyname].toString() === val);
 
             return chat[propertyname].toString() === val
         }
@@ -219,13 +211,10 @@ userSchema.methods.addMessage = async function addMessage(friendship_id, message
         messages: []
     })
     let index = await this.findUniqueChatIndex(friendship_id, 'friendship_id')
-    console.log(index);
 
 
     let _id = new mongoose.Types.ObjectId()
-    console.log(message)
     saveMessage = { _id, ...message }
-    console.log(saveMessage)
     this.chats[index].messages = this.chats[index].messages
         .concat([saveMessage])
     await this.save()
@@ -234,7 +223,6 @@ userSchema.methods.addMessage = async function addMessage(friendship_id, message
 
 userSchema.methods.toJSON = function () {
     user = this
-    console.log(user)
     return {
         id: user._id,
         email: user.email,
