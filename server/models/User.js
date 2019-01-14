@@ -121,7 +121,8 @@ userSchema.methods.generateAuthToken = async function generateAuthToken() {
 }
 
 userSchema.methods.startChat = async function startChat(chat) {
-    // check first
+    //  TODO: MAKE SURE THAT THE USER IS A FRIEND FIRST
+    // check for existing chat first
     let newChat = await this.findUniqueChat(chat.friendship_id, 'friendship_id')
     if (!newChat) {
         newChat = { _id: new mongoose.Types.ObjectId(), ...chat }

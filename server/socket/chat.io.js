@@ -11,7 +11,8 @@ module.exports = async function ioconnection(io, friendship_id, user, activeUser
 
             let chat = await user.findUniqueChat(friendship_id, 'friendship_id')
             if (!chat) {
-                throw ({ message: "chat not found" })
+                chat = user.startChat({friendship_id, messages: []})
+                // throw ({ message: "chat not found" })
             }
             socket.join(friendship_id)
         } catch (error) {
