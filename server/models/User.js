@@ -125,6 +125,8 @@ userSchema.methods.startChat = async function startChat(chat) {
     // check for existing chat first
     let newChat = await this.findUniqueChat(chat.friendship_id, 'friendship_id')
     if (!newChat) {
+        console.log('start chat had to concat a new chat');
+        
         newChat = { _id: new mongoose.Types.ObjectId(), ...chat }
         this.newChat = this.chats.concat([newChat])
         await this.save()
