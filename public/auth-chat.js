@@ -12,12 +12,12 @@ socket.on('newMessage', data => {
     var templateData = {
         text: data.text,
         from: data.from,
-        createdAt: data.createdAt,
+        createdAt: data.createdAt.toLocaleString(),
         id: `msg-${data.id}`
     }
     if (data.quoted) {
         templateData.quotedFrom = data.quoted.from
-        templateData.quotedAt = data.quoted.createdAt
+        templateData.quotedAt = data.quoted.createdAt.toLocaleString()
         templateData.quotedMessage = data.quoted.text
         template = messageQuoteTemplate
     } else {
