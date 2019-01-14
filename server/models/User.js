@@ -123,6 +123,7 @@ userSchema.methods.generateAuthToken = async function generateAuthToken() {
 userSchema.methods.startChat = async function startChat(chat) {
     //  TODO: MAKE SURE THAT THE USER IS A FRIEND FIRST
     // check for existing chat first
+    console.trace()
     let newChat = await this.findUniqueChat(chat.friendship_id, 'friendship_id')
     if (!newChat) {
         console.log('start chat had to concat a new chat');
@@ -155,6 +156,9 @@ userSchema.methods.findUniqueChat = async function findUniqueChat(val, propertyn
     let index
     let chats = this.chats.filter((chat, index) => {
         if (chat) {
+
+            console.log(chat[propertyname].toString() + ' === ' + val);
+            console.log(chat[propertyname].toString() === val);
             return chat[propertyname].toString() === val
         }
         return false
