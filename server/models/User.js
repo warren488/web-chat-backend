@@ -211,7 +211,10 @@ userSchema.methods.addMessage = async function addMessage(friendship_id, message
         messages: []
     })
     let index = await this.findUniqueChatIndex(friendship_id, 'friendship_id')
-
+    if(index === -1){
+        console.log('issue finding chat in add message');
+        
+    }
 
     let _id = new mongoose.Types.ObjectId()
     saveMessage = { _id, ...message }

@@ -2,9 +2,20 @@ let User = require('../models/User')
 
 module.exports = async function ioconnection(io, friendship_id, token, activeUsers) {
     io.on("connection", async socket => {
-        let user = await User.findByToken(token)
+        // very important that we use the function parameters ince and then throw them away
+        // for any additional processing (or store in global variable)
+
+
+        let user
+        if(socket.id in activeUsers){
+            // this very much needs to ensure unused sokets are deleted
+            // OR that the ids are never reused(idk but unlikely)
+            user = await User.findByToken(activeUsers[socket.id])
+        }else{
+            user = await User.findByToken(token)
+            activeUsers[socket.id] = user._id.toString()
+        }
         console.log('here');
-        activeUsers[socket.id] = user._id.toString()
         console.log('here2');
         try {
             let chat = await user.findUniqueChat(friendship_id, 'friendship_id')
