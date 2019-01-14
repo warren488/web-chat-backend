@@ -13,9 +13,9 @@ module.exports = async function ioconnection(io, friendship_id, token, activeUse
             let chat = await user.findUniqueChat(friendship_id, 'friendship_id')
             if (!chat) {
                 // console.log(chat);
-                chat = await user.startChat({friendship_id, messages: []})
+                chat = await user.startChat({ friendship_id, messages: [] })
                 // console.log(chat);
-                
+
                 // throw ({ message: "chat not found" })
             }
             socket.join(friendship_id)
@@ -26,9 +26,9 @@ module.exports = async function ioconnection(io, friendship_id, token, activeUse
         socket.on('sendMessage', async (messageData, callback) => {
             let user = await User.findByToken(token)
             console.trace()
-            console.log('called with: ');
+            console.log('called by ' + user.username + '(' + socket.id + ') with: ');
             console.log(messageData);
-            
+
             try {
 
 
