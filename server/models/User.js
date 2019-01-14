@@ -195,6 +195,9 @@ userSchema.methods.findUniqueChatIndex = async function findUniqueChat(val, prop
     // method doesnt actually ensure uniqueness, rather it only returns one value 
     let index = this.chats.findIndex((chat, index) => {
         if (chat) {
+            console.log(chat[propertyname].toString() + ' === ' + val);
+            console.log(chat[propertyname].toString() === val);
+
             return chat[propertyname].toString() === val
         }
         return false
