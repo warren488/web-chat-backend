@@ -3,13 +3,10 @@ let User = require('../models/User')
 module.exports = async function ioconnection(io, friendship_id, token, activeUsers) {
     io.on("connection", async socket => {
         let user = await User.findByToken(token)
-
         console.log('here');
-
         activeUsers[socket.id] = user._id.toString()
         console.log('here2');
         try {
-
             let chat = await user.findUniqueChat(friendship_id, 'friendship_id')
             if (!chat) {
                 // console.log(chat);
@@ -23,15 +20,14 @@ module.exports = async function ioconnection(io, friendship_id, token, activeUse
             console.log(error)
         }
 
-        socket.on('sendMessage', async (messageData, callback) => {
-            let user = await User.findByToken(token)
+
+
+        socket.on('sendMessage', async function sendMessage(messageData, callback) {
+            let user = await User.findById(activeUsers[socket.id])
             console.trace()
             console.log('called by ' + user.username + '(' + socket.id + ') with: ');
             console.log(messageData);
-
             try {
-
-
                 let message = {
                     createdAt: new Date().getTime(),
                     text: messageData.text,
@@ -55,6 +51,10 @@ module.exports = async function ioconnection(io, friendship_id, token, activeUse
             } catch (error) {
                 console.log(error)
             }
+        })
+
+        socket.on("disconnect", (args) => {
+            delete activeUsers[socket.id]
         })
     })
 
