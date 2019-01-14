@@ -126,7 +126,7 @@ userSchema.methods.startChat = async function startChat(chat) {
     if (!newChat) {
         
         newChat = { _id: new mongoose.Types.ObjectId(), ...chat }
-        this.newChat = this.chats.concat([newChat])
+        this.chats = this.chats.concat([newChat])
         await this.save()
 
     }
