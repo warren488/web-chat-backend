@@ -22,7 +22,13 @@ $('#signup').submit((e) => {
             document.cookie = 'token=' + token
             window.location.href = '/home'
         },
-        error: console.log,
+        error: function (data) {
+            if (data.responseJSON.message) {
+                alert(data.responseJSON.message)
+            } else {
+                alert('error login in')
+            }
+        }
         json: true
     });
     return false
