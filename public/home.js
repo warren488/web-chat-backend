@@ -48,6 +48,8 @@ function startChat(e) {
 
 // open menu
 $("#menu-button").click(e => {
+    // console.log('clicked');
+
     e.preventDefault();
     // sidebar to be opened
     document.getElementById('side').classList.add('shown-for-mobile')

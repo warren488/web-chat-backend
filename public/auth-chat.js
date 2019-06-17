@@ -78,6 +78,8 @@ $("#message-form").submit(e => {
 
 // open menu
 $("#menu-button").click(e => {
+    console.log('clicked');
+
     // sidebar to be opened
     document.getElementById('side').classList.add('shown-for-mobile')
 })
