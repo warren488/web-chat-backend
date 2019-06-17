@@ -7,12 +7,13 @@
     <title>Chat | ChatApp</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
     <link rel="stylesheet" href="/chat.css">
+    <link rel="stylesheet" href="/mychat.css">
 </head>
 
 <body class="chat">
 
-    <div class="chat__sidebar">
-        <h3>People</h3>
+    <div class="chat__sidebar" id="side">
+        <h3>People</h3> <h3 id="close" class="mobile">X</h3>
         <div class="chat__footer" id="add-friend">
             <form id="friend-form">
                 <input type="text" id="fri-txt" name="username" placeholder="add friend..." autocomplete="off"
@@ -63,6 +64,7 @@
         </ol>
         <div class="chat__footer">
             <form id="message-form">
+                <button id="menu-button" class="mobile">Menu</button>
                 <input type="text" id="msg-txt" name="message" placeholder="send message..." autocomplete="off"
                     autofocus>
                 <button id="send-button">Send</button>

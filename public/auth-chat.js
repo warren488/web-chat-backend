@@ -4,7 +4,7 @@ var hID
 var socket = io();
 socket.on("connect", () => {
     console.log('connected');
-    
+
 })
 socket.on('newMessage', data => {
     console.log(data)
@@ -24,15 +24,15 @@ socket.on('newMessage', data => {
         template = messageTemplate
     }
     console.log(templateData);
-    
+
     var html = Mustache.render(template, templateData)
     console.log(data)
-    // let name = $.deparam(window.location.search).name
-    // let chatChild = document.createElement('li')
-    // chatChild.innerHTML = `${(data.name === name) ? 'me' : data.name}: ${data.text}`
+        // let name = $.deparam(window.location.search).name
+        // let chatChild = document.createElement('li')
+        // chatChild.innerHTML = `${(data.name === name) ? 'me' : data.name}: ${data.text}`
     $('#messages')
         .html($('#messages').html() + html)
-    // .hover(messageHoverIn, messageHoverOut)
+        // .hover(messageHoverIn, messageHoverOut)
 
     scrollBottom()
 
@@ -55,7 +55,7 @@ $("#friend-form").submit(e => {
             'x-auth': getToken()
         },
         success: () => alert('friend successfully added'),
-        error: function (err) {
+        error: function(err) {
             console.log(err);
             alert('error adding friend')
         },
@@ -74,6 +74,16 @@ $("#message-form").submit(e => {
     }
     cancelReply()
     return false
+})
+
+// open menu
+$("#menu-button").click(e => {
+    // sidebar to be opened
+    document.getElementById('side').classList.add('shown-for-mobile')
+})
+
+$("#close").click(e => {
+    document.getElementById('side').classList.remove('shown-for-mobile')
 })
 
 function startChat(e) {
@@ -111,7 +121,7 @@ var replyClick = (e) => {
     $('#send-button').text('Reply')
     $('#msg-txt').attr('placeholder', 'reply to message...')
     $('#msg-txt').focus()
-    // $('#message-form').append(cancelHtml)
+        // $('#message-form').append(cancelHtml)
 }
 
 

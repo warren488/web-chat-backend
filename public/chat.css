@@ -146,7 +146,11 @@ button:disabled {
 }
 
 .chat__footer form * {
-    margin-right: 10px
+    margin-right: 10px;
+}
+
+.chat__footer form input {
+    margin-left: 10px
 }
 
 .chat__footer input {

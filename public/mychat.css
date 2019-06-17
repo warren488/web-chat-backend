@@ -1,0 +1,31 @@
+@media screen and (min-width: 600.1px) {
+    .mobile {
+        display: none;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .mobile {
+        display: inline-block;
+    }
+}
+
+.chat__sidebar h3 {
+    display: inline-block;
+}
+
+#close {
+    cursor: pointer;
+}
+
+#side.shown-for-mobile {
+    position: absolute;
+    display: block;
+}
+
+#add-friend input,
+#add-friend button {
+    margin-left: 0px;
+}
+
+.
