@@ -65,11 +65,18 @@
         <div class="chat__footer">
             <form id="message-form">
                 <button id="menu-button" type="button" class="mobile">Menu</button>
+                <button id="emoji-button" type="button">&#128578;</button>
                 <input type="text" id="msg-txt" name="message" placeholder="send message..." autocomplete="off"
                     autofocus>
                 <button id="send-button">Send</button>
                 <button class="no-show" onclick="cancelReply(this)" id="cancel-reply">X</button>
             </form>
+        </div>
+        {{!-- add emojis to the bottom part of the chat interface --}}
+        <div class="emojis" id="my-emojis">
+            {{#each emojis}}
+            <span data-value="{{this}}">{{this}}</span>
+            {{/each}}
         </div>
     </div>
 

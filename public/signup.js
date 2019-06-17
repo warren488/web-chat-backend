@@ -17,20 +17,19 @@ $('#signup').submit((e) => {
         headers: {
             'Content-type': 'application/json'
         },
-        success: function (xhr) {
+        success: function(xhr) {
             var token = xhr.token
             document.cookie = 'token=' + token
             window.location.href = '/home'
         },
-        error: function (data) {
+        error: function(data) {
             if (data.responseJSON.message) {
                 alert(data.responseJSON.message)
             } else {
                 alert('error login in')
             }
-        }
+        },
         json: true
     });
     return false
 })
-

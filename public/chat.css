@@ -160,9 +160,9 @@ button:disabled {
 }
 
 .message {
-    padding: 10px;
+    padding: 16px;
     background-color: #e6eaee;
-    border-radius: 3px;
+    border-radius: 20px;
     margin: 5px;
 }
 
@@ -212,9 +212,10 @@ button:disabled {
     background-color: rgb(202, 202, 202);
     display: inline-block;
     border: thin solid rgb(202, 202, 202);
-    border-radius: 3px;
-    padding: 3px;
+    border-radius: 20px;
+    padding: 10px;
     margin-left: 5%;
+    margin-top: 5px;
     width: 95%;
 }
 

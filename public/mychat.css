@@ -27,3 +27,31 @@
 #add-friend button {
     margin-left: 0px;
 }
+
+.emojis {
+    max-height: 15%;
+    overflow: scroll;
+}
+
+.emojis span {
+    font-size: 2rem;
+}
+
+#emoji-button {
+    background-color: transparent;
+    padding: 0px;
+    margin-left: 10px;
+    font-size: 2rem;
+}
+
+#my-emojis {
+    display: none;
+}
+
+#my-emojis * {
+    cursor: pointer;
+}
+
+#my-emojis.show {
+    display: block;
+}

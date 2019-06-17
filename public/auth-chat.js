@@ -78,14 +78,27 @@ $("#message-form").submit(e => {
 
 // open menu
 $("#menu-button").click(e => {
-    console.log('clicked');
-
-    // sidebar to be opened
-    document.getElementById('side').classList.add('shown-for-mobile')
-})
-
+        // sidebar to be opened
+        document.getElementById('side').classList.add('shown-for-mobile')
+    })
+    // close menu
 $("#close").click(e => {
     document.getElementById('side').classList.remove('shown-for-mobile')
+})
+
+
+// open emojis
+$("#emoji-button").click(e => {
+    // sidebar to be opened
+    document.getElementById('my-emojis').classList.toggle('show')
+    scrollBottom();
+})
+
+// add the emoji to the text currently in the chat input field
+$("#my-emojis").click(e => {
+    if (e.target.dataset.value) {
+        $('#msg-txt').val($('#msg-txt').val() + e.target.dataset.value)
+    }
 })
 
 function startChat(e) {

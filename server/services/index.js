@@ -1,11 +1,12 @@
 let User = require('../models/User')
-
+    // get our emojis to export through services
+const emojis = require('./emoji')
 
 async function createUser(req, res) {
 
     try {
         // await User.schema.methods.validateSchema(req.body)
-        let user = new User({ ...req.body, chats: [] })
+        let user = new User({...req.body, chats: [] })
 
         let token = await user.generateAuthToken()
         console.log(req.body);
@@ -139,4 +140,4 @@ async function chatRedirect(req, res) {
 
 }
 
-module.exports = { chatRedirect, createUser, login, logout, authenticate, HTMLauthenticate, addFriend }
+module.exports = { chatRedirect, createUser, login, emojis, logout, authenticate, HTMLauthenticate, addFriend }
