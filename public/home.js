@@ -15,7 +15,7 @@ $("#friend-form").submit(e => {
             'x-auth': getToken()
         },
         success: () => alert('friend successfully added'),
-        error: function (err) {
+        error: function(err) {
             console.log(err);
             alert('error adding friend')
         },
@@ -45,3 +45,14 @@ function startChat(e) {
     });
     return false
 }
+
+// open menu
+$("#menu-button").click(e => {
+    e.preventDefault();
+    // sidebar to be opened
+    document.getElementById('side').classList.add('shown-for-mobile')
+})
+
+$("#close").click(e => {
+    document.getElementById('side').classList.remove('shown-for-mobile')
+})
