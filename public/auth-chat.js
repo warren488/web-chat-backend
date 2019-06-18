@@ -144,7 +144,7 @@ $("#emoji-button").click(e => {
 // add the emoji to the text currently in the chat input field
 $("#my-emojis").click(e => {
     if (e.target.dataset.value) {
-        $('#msg-txt').val($('#msg-txt').val() + e.target.dataset.value)
+        $('#msg-txt').val($('#msg-txt').val() + e.target.dataset.value).focus()
     }
 })
 
