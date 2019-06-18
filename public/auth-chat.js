@@ -2,7 +2,6 @@ messageTemplate = `<li class='message' id='{{id}}'><div class='message__title'> 
 messageQuoteTemplate = ` <li class='message' id='{{id}}'><div class='message__title'>    <h4>{{from}}</h4>    <span>{{createdAt}}</span>    <p class='reply' onclick="replyClick(this)" >reply</p>    <!-- <div class="dropdown">            <span>Mouse over me</span>            <div class="dropdown-content">            <p>Hello World!</p>            </div>          </div> --></div><div class="message__body">    <p class="wrap"> {{text}}</p>    <span class="quoted">        <div class='message__title'>            <h4>{{quotedFrom}}</h4>            <span>{{quotedAt}}</span>        </div>         <p class="wrap">{{quotedMessage}}</p>            </span></div></li>`
 var hID
 var socket = io();
-scrollBottom();
 
 socket.on("connect", () => {
     console.log('connected');
@@ -152,8 +151,7 @@ function cancelReply() {
     hID = null
 }
 
-function scrollBottom() {
-
+function scrollBottom(force) {    
     let messages = $("#messages")
     let newMessage = messages.children('li:last-child')
 
@@ -164,7 +162,7 @@ function scrollBottom() {
     let lastMessageHeight = newMessage.prev().innerHeight()
 
 
-    if (clientHeight + scrollTop + newMessageHeight + lastMessageHeight >= scrollHeight) {
+    if ((clientHeight + scrollTop + newMessageHeight + lastMessageHeight >= scrollHeight) || force) {
         messages.scrollTop(scrollHeight + newMessageHeight)
         console.log("should scroll")
     }
@@ -205,3 +203,4 @@ function notifyMe(data) {
 function getUsername() {
     return document.cookie.replace((/(?:(?:^|.*;\s*)username\s*\=\s*([^;]*).*$)|^.*$/), "$1")
 }
+$('document').ready( e => scrollBottom(true))
