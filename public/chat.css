@@ -164,6 +164,11 @@ button:disabled {
     background-color: #e6eaee;
     border-radius: 20px;
     margin: 5px;
+    max-width: 80%;
+    width: fit-content;
+}
+.message.me {
+    float: right;
 }
 
 .message:hover {

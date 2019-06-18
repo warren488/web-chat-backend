@@ -1,5 +1,5 @@
-messageTemplate = `<li class='message' id='{{id}}'><div class='message__title'>    <h4>{{from}}</h4>    <span>{{createdAt}}</span>    <p class='reply' onclick="replyClick(this)">reply</p>    <!-- <div class="dropdown">            <span>Mouse over me</span>            <div class="dropdown-content">            <p>Hello World!</p>            </div>          </div> --></div><div class="message__body">    <p class="wrap">{{text}}</p> </div></li>`
-messageQuoteTemplate = ` <li class='message' id='{{id}}'><div class='message__title'>    <h4>{{from}}</h4>    <span>{{createdAt}}</span>    <p class='reply' onclick="replyClick(this)" >reply</p>    <!-- <div class="dropdown">            <span>Mouse over me</span>            <div class="dropdown-content">            <p>Hello World!</p>            </div>          </div> --></div><div class="message__body">    <p class="wrap"> {{text}}</p>    <span class="quoted">        <div class='message__title'>            <h4>{{quotedFrom}}</h4>            <span>{{quotedAt}}</span>        </div>         <p class="wrap">{{quotedMessage}}</p>            </span></div></li>`
+messageTemplate = `<li class='message {{class}}' id='{{id}}'><div class='message__title'>    <h4>{{from}}</h4>    <span>{{createdAt}}</span>    <p class='reply' onclick="replyClick(this)">reply</p>    <!-- <div class="dropdown">            <span>Mouse over me</span>            <div class="dropdown-content">            <p>Hello World!</p>            </div>          </div> --></div><div class="message__body">    <p class="wrap">{{text}}</p> </div></li>`
+messageQuoteTemplate = `<li class='message {{class}}' id='{{id}}'><div class='message__title'>    <h4>{{from}}</h4>    <span>{{createdAt}}</span>    <p class='reply' onclick="replyClick(this)" >reply</p>    <!-- <div class="dropdown">            <span>Mouse over me</span>            <div class="dropdown-content">            <p>Hello World!</p>            </div>          </div> --></div><div class="message__body">    <p class="wrap"> {{text}}</p>    <span class="quoted">        <div class='message__title'>            <h4>{{quotedFrom}}</h4>            <span>{{quotedAt}}</span>        </div>         <p class="wrap">{{quotedMessage}}</p>            </span></div></li>`
 var hID
 var socket = io();
 var typing = {};
@@ -30,12 +30,13 @@ socket.on('newMessage', data => {
     var template
     var templateData = {
         text: data.text,
-        from: data.from,
+        from: (data.from === getUsername() ? 'me' : data.from),
+        class: (data.from === getUsername() ? 'me' : 'them'),
         createdAt: data.createdAt.toLocaleString(),
         id: `msg-${data.id}`
     }
     if (data.quoted) {
-        templateData.quotedFrom = data.quoted.from
+        templateData.quotedFrom = (data.quoted.from === getUsername() ? 'me' : data.quoted.from)
         templateData.quotedAt = data.quoted.createdAt.toLocaleString()
         templateData.quotedMessage = data.quoted.text
         template = messageQuoteTemplate
