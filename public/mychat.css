@@ -55,3 +55,8 @@
 #my-emojis.show {
     display: block;
 }
+
+div.typing {
+    display: block;
+    text-align: center;
+}

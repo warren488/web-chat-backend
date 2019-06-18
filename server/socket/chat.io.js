@@ -16,8 +16,6 @@ module.exports = async function ioconnection(io, friendship_id, token, activeUse
             user = await User.findByToken(token)
             activeUsers[socket.id] = user._id.toString()
         }
-        console.log('here');
-        console.log('here2');
         try {
             let chat = await user.findUniqueChat(friendship_id, 'friendship_id')
             if (!chat) {
@@ -35,6 +33,12 @@ module.exports = async function ioconnection(io, friendship_id, token, activeUse
 
 
         socket.on('sendMessage', async function sendMessage(messageData, callback) {
+            // if this is a socket message about the users is typing then
+            // just handle it here
+            if (messageData.type === 'typing') {
+                io.to(friendship_id).emit('newMessage', messageData)
+                return
+            }
             let user = await User.findById(activeUsers[socket.id])
             console.log(messageData);
             try {
@@ -58,7 +62,7 @@ module.exports = async function ioconnection(io, friendship_id, token, activeUse
                 await friend.addMessage(friendship_id, { _id: msgId, ...message })
                 io.to(friendship_id).emit('newMessage', { id: msgId, ...message })
                 return callback()
-                
+
             } catch (error) {
                 console.log(error)
             }

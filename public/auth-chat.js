@@ -2,12 +2,28 @@ messageTemplate = `<li class='message' id='{{id}}'><div class='message__title'> 
 messageQuoteTemplate = ` <li class='message' id='{{id}}'><div class='message__title'>    <h4>{{from}}</h4>    <span>{{createdAt}}</span>    <p class='reply' onclick="replyClick(this)" >reply</p>    <!-- <div class="dropdown">            <span>Mouse over me</span>            <div class="dropdown-content">            <p>Hello World!</p>            </div>          </div> --></div><div class="message__body">    <p class="wrap"> {{text}}</p>    <span class="quoted">        <div class='message__title'>            <h4>{{quotedFrom}}</h4>            <span>{{quotedAt}}</span>        </div>         <p class="wrap">{{quotedMessage}}</p>            </span></div></li>`
 var hID
 var socket = io();
+var typing = {};
 
 socket.on("connect", () => {
     console.log('connected');
 
 })
 socket.on('newMessage', data => {
+    // if we get a message about the other persons typing
+    if (data.type === 'typing') {
+        // if its us then do nothing
+        if(data.from === getUsername()){
+            return
+        }
+        // if its saying the person has started typing
+        if (data.status === 'start') {
+            document.querySelector('.typing').style.display = 'block'
+        // if its saying the person has stopped typing
+        } else if (data.status === 'stop') {
+            document.querySelector('.typing').style.display = 'none'
+        }
+        return
+    }
     if (data.from !== getUsername()) {
         notifyMe({ from: data.from, message: data.text })
     }
@@ -77,6 +93,34 @@ $("#message-form").submit(e => {
     }
     cancelReply()
     return false
+})
+
+// update typing info for every keydown
+$("#msg-txt").keydown(e => {
+    // if we're already recorded as "typing"
+    if (!typing.status) {
+        socket.emit('sendMessage', { from: getUsername(), type: 'typing', status: 'start' }, () => console.log('typing sent'))
+    }
+    // set a timeout of 1 second every time we press a key
+    typing.time = 1000
+    typing.status = true
+    // if we dont have and interval currently "decrementing" the "counter(typing.time)"
+    // then start this interval
+    if (!typing.interval) {
+        typing.interval = setInterval(() => {
+            // every 100 miliseconds we decrement by 100
+            typing.time -= 100
+            // if we've reached 0 seconds
+            if (typing.time < 0) {
+                // mark us as not typing and and clear and delete the interval
+                typing.status = false;
+                clearInterval(typing.interval)
+                delete typing.interval
+                socket.emit('sendMessage', { type: 'typing', status: 'stop' }, () => console.log('typing sent'))
+            }
+        }, 100);
+    }
+
 })
 
 // open menu
@@ -151,7 +195,7 @@ function cancelReply() {
     hID = null
 }
 
-function scrollBottom(force) {    
+function scrollBottom(force) {
     let messages = $("#messages")
     let newMessage = messages.children('li:last-child')
 
@@ -198,4 +242,4 @@ function notifyMe(data) {
 function getUsername() {
     return document.cookie.replace((/(?:(?:^|.*;\s*)username\s*\=\s*([^;]*).*$)|^.*$/), "$1")
 }
-$('document').ready( e => scrollBottom(true))
+$('document').ready(e => scrollBottom(true))
