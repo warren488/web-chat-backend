@@ -169,13 +169,8 @@ function scrollBottom(force) {
 }
 
 function notifyMe(data) {
-    let text;
+    let text = data.from + ': ' + data.message
     // Let's check if the browser supports notifications
-    if (data.message.length > 16) {
-        text = data.from + ': ' + data.message.slice(0, 15) + '...'
-    } else {
-        text = data.from + ': ' + data.message
-    }
     if (!("Notification" in window)) {
         alert("This browser does not support desktop notification");
     }
