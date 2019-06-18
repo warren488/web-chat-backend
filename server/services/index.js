@@ -36,7 +36,7 @@ async function login(req, res) {
         }
 
 
-        return res.status(200).send({ token })
+        return res.status(200).send({ token, username: user.username })
 
     } catch (error) {
         console.log(error)

@@ -2,12 +2,16 @@ messageTemplate = `<li class='message' id='{{id}}'><div class='message__title'> 
 messageQuoteTemplate = ` <li class='message' id='{{id}}'><div class='message__title'>    <h4>{{from}}</h4>    <span>{{createdAt}}</span>    <p class='reply' onclick="replyClick(this)" >reply</p>    <!-- <div class="dropdown">            <span>Mouse over me</span>            <div class="dropdown-content">            <p>Hello World!</p>            </div>          </div> --></div><div class="message__body">    <p class="wrap"> {{text}}</p>    <span class="quoted">        <div class='message__title'>            <h4>{{quotedFrom}}</h4>            <span>{{quotedAt}}</span>        </div>         <p class="wrap">{{quotedMessage}}</p>            </span></div></li>`
 var hID
 var socket = io();
+scrollBottom();
+
 socket.on("connect", () => {
     console.log('connected');
 
 })
 socket.on('newMessage', data => {
-    console.log(data)
+    if (data.from !== getUsername()) {
+        notifyMe({ from: data.from, message: data.text })
+    }
     var template
     var templateData = {
         text: data.text,
@@ -27,12 +31,12 @@ socket.on('newMessage', data => {
 
     var html = Mustache.render(template, templateData)
     console.log(data)
-        // let name = $.deparam(window.location.search).name
-        // let chatChild = document.createElement('li')
-        // chatChild.innerHTML = `${(data.name === name) ? 'me' : data.name}: ${data.text}`
+    // let name = $.deparam(window.location.search).name
+    // let chatChild = document.createElement('li')
+    // chatChild.innerHTML = `${(data.name === name) ? 'me' : data.name}: ${data.text}`
     $('#messages')
         .html($('#messages').html() + html)
-        // .hover(messageHoverIn, messageHoverOut)
+    // .hover(messageHoverIn, messageHoverOut)
 
     scrollBottom()
 
@@ -55,7 +59,7 @@ $("#friend-form").submit(e => {
             'x-auth': getToken()
         },
         success: () => alert('friend successfully added'),
-        error: function(err) {
+        error: function (err) {
             console.log(err);
             alert('error adding friend')
         },
@@ -78,10 +82,10 @@ $("#message-form").submit(e => {
 
 // open menu
 $("#menu-button").click(e => {
-        // sidebar to be opened
-        document.getElementById('side').classList.add('shown-for-mobile')
-    })
-    // close menu
+    // sidebar to be opened
+    document.getElementById('side').classList.add('shown-for-mobile')
+})
+// close menu
 $("#close").click(e => {
     document.getElementById('side').classList.remove('shown-for-mobile')
 })
@@ -136,7 +140,7 @@ var replyClick = (e) => {
     $('#send-button').text('Reply')
     $('#msg-txt').attr('placeholder', 'reply to message...')
     $('#msg-txt').focus()
-        // $('#message-form').append(cancelHtml)
+    // $('#message-form').append(cancelHtml)
 }
 
 
@@ -164,4 +168,40 @@ function scrollBottom() {
         messages.scrollTop(scrollHeight + newMessageHeight)
         console.log("should scroll")
     }
+}
+
+function notifyMe(data) {
+    let text;
+    // Let's check if the browser supports notifications
+    if (data.message.length > 16) {
+        text = data.from + ': ' + data.message.slice(0, 15) + '...'
+    } else {
+        text = data.from + ': ' + data.message
+    }
+    if (!("Notification" in window)) {
+        alert("This browser does not support desktop notification");
+    }
+
+    // Let's check whether notification permissions have already been granted
+    else if (Notification.permission === "granted") {
+        // If it's okay let's create a notification
+        var notification = new Notification(text);
+    }
+
+    // Otherwise, we need to ask the user for permission
+    else if (Notification.permission !== "denied") {
+        Notification.requestPermission().then(function (permission) {
+            // If the user accepts, let's create a notification
+            if (permission === "granted") {
+                var notification = new Notification(text);
+            }
+        });
+    }
+
+    // At last, if the user has denied notifications, and you 
+    // want to be respectful there is no need to bother them any more.
+}
+
+function getUsername() {
+    return document.cookie.replace((/(?:(?:^|.*;\s*)username\s*\=\s*([^;]*).*$)|^.*$/), "$1")
 }

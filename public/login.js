@@ -15,6 +15,8 @@ $("#login").submit(e => {
         },
         success: function (xhr) {
             var token = xhr.token
+            var username = xhr.username
+            document.cookie = 'username=' + username
             document.cookie = 'token=' + token
             window.location.href = '/home'
         },
