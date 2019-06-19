@@ -33,7 +33,7 @@ socket.on('newMessage', data => {
         from: (data.from === getUsername() ? 'me' : data.from),
         class: (data.from === getUsername() ? 'me' : 'them'),
         createdAt: data.createdAt.toLocaleString(),
-        id: `msg-${data.id}`
+        id: `${data.id}`
     }
     if (data.quoted) {
         templateData.quotedFrom = (data.quoted.from === getUsername() ? 'me' : data.quoted.from)
@@ -85,12 +85,14 @@ $("#friend-form").submit(e => {
 })
 
 $("#message-form").submit(e => {
+    e.preventDefault()
     let text = $('#msg-txt').val()
     if (text.trim().length > 0) {
         socket.emit('sendMessage', { hID, text: text, name: $.deparam(window.location.search).name }, () => console.log('message sent'))
         $('#msg-txt').focus()
         $('#msg-txt').val('')
         cancelReply()
+        return false
     }
     cancelReply()
     return false
@@ -191,7 +193,12 @@ var replyClick = (e) => {
 function cancelReply() {
     $('#cancel-reply').addClass('no-show')
     // $(`#${hID}`).removeClass('highlighted')
-    document.querySelector(`#${hID}`).classList.remove('highlighted')
+    // we may not have an element selected to reply
+    let replyTo = document.getElementById(hID)
+    if(replyTo){
+        replyTo.classList.remove('highlighted')
+    }
+    
     $('#send-button').text('Send')
     $('#msg-txt').attr('placeholder', 'send message...')
     hID = null
