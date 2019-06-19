@@ -12,15 +12,15 @@ socket.on('newMessage', data => {
     // if we get a message about the other persons typing
     if (data.type === 'typing') {
         // if its us then do nothing
-        if(data.from === getUsername()){
+        if (data.from === getUsername()) {
             return
         }
         // if its saying the person has started typing
         if (data.status === 'start') {
-            document.querySelector('.typing').style.display = 'block'
-        // if its saying the person has stopped typing
+            document.querySelector('.typing').style.opacity = '1'
+                // if its saying the person has stopped typing
         } else if (data.status === 'stop') {
-            document.querySelector('.typing').style.display = 'none'
+            document.querySelector('.typing').style.opacity = '0'
         }
         return
     }
@@ -47,12 +47,12 @@ socket.on('newMessage', data => {
 
     var html = Mustache.render(template, templateData)
     console.log(data)
-    // let name = $.deparam(window.location.search).name
-    // let chatChild = document.createElement('li')
-    // chatChild.innerHTML = `${(data.name === name) ? 'me' : data.name}: ${data.text}`
+        // let name = $.deparam(window.location.search).name
+        // let chatChild = document.createElement('li')
+        // chatChild.innerHTML = `${(data.name === name) ? 'me' : data.name}: ${data.text}`
     $('#messages')
         .html($('#messages').html() + html)
-    // .hover(messageHoverIn, messageHoverOut)
+        // .hover(messageHoverIn, messageHoverOut)
 
     scrollBottom()
 
@@ -75,7 +75,7 @@ $("#friend-form").submit(e => {
             'x-auth': getToken()
         },
         success: () => alert('friend successfully added'),
-        error: function (err) {
+        error: function(err) {
             console.log(err);
             alert('error adding friend')
         },
@@ -107,13 +107,13 @@ $("#msg-txt").keydown(e => {
     // set a timeout of 1 second every time we press a key
     typing.time = 1000
     typing.status = true
-    // if we dont have and interval currently "decrementing" the "counter(typing.time)"
-    // then start this interval
+        // if we dont have and interval currently "decrementing" the "counter(typing.time)"
+        // then start this interval
     if (!typing.interval) {
         typing.interval = setInterval(() => {
             // every 100 miliseconds we decrement by 100
             typing.time -= 100
-            // if we've reached 0 seconds
+                // if we've reached 0 seconds
             if (typing.time < 0) {
                 // mark us as not typing and and clear and delete the interval
                 typing.status = false;
@@ -128,10 +128,10 @@ $("#msg-txt").keydown(e => {
 
 // open menu
 $("#menu-button").click(e => {
-    // sidebar to be opened
-    document.getElementById('side').classList.add('shown-for-mobile')
-})
-// close menu
+        // sidebar to be opened
+        document.getElementById('side').classList.add('shown-for-mobile')
+    })
+    // close menu
 $("#close").click(e => {
     document.getElementById('side').classList.remove('shown-for-mobile')
 })
@@ -186,19 +186,19 @@ var replyClick = (e) => {
     $('#send-button').text('Reply')
     $('#msg-txt').attr('placeholder', 'reply to message...')
     $('#msg-txt').focus()
-    // $('#message-form').append(cancelHtml)
+        // $('#message-form').append(cancelHtml)
 }
 
 
 function cancelReply() {
     $('#cancel-reply').addClass('no-show')
-    // $(`#${hID}`).removeClass('highlighted')
-    // we may not have an element selected to reply
+        // $(`#${hID}`).removeClass('highlighted')
+        // we may not have an element selected to reply
     let replyTo = document.getElementById(hID)
-    if(replyTo){
+    if (replyTo) {
         replyTo.classList.remove('highlighted')
     }
-    
+
     $('#send-button').text('Send')
     $('#msg-txt').attr('placeholder', 'send message...')
     hID = null
@@ -223,7 +223,7 @@ function scrollBottom(force) {
 
 function notifyMe(data) {
     let text = data.from + ': ' + data.message
-    // Let's check if the browser supports notifications
+        // Let's check if the browser supports notifications
     if (!("Notification" in window)) {
         alert("This browser does not support desktop notification");
     }
@@ -236,7 +236,7 @@ function notifyMe(data) {
 
     // Otherwise, we need to ask the user for permission
     else if (Notification.permission !== "denied") {
-        Notification.requestPermission().then(function (permission) {
+        Notification.requestPermission().then(function(permission) {
             // If the user accepts, let's create a notification
             if (permission === "granted") {
                 var notification = new Notification(text);

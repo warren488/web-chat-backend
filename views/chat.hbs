@@ -31,10 +31,14 @@
         </div>
     </div>
     <div class="chat__main">
-
+        <header class="chat__heading">
+            <button id="menu-button" type="button" class="mobile"><img src="/images/menu.png" alt=""></button>
+            <h1> {{friend}}</h1>
+            <div class="typing" style="margin-left: 3px; opacity: 0; display: inline-block">typing...</div>
+        </header>
         <ol class="chat__messages" id="messages">
             {{#each messages}}
-            <li {{#equal ../username from }}class="me"{{/equal}} id='{{_id}}'>
+            <li {{#equal ../username from }}class="me" {{/equal}} id='{{_id}}'>
                 <div class="message">
                     <div class='message__title'>
                         <h4>{{from}}</h4>
@@ -67,10 +71,8 @@
             {{/each}}
         </ol>
         <div class="chat__footer">
-            <div class="typing" style="display: none">typing...</div>
             <br>
             <form id="message-form">
-                <button id="menu-button" type="button" class="mobile">Menu</button>
                 <button id="emoji-button" type="button">&#128578;</button>
                 <input type="text" id="msg-txt" name="message" placeholder="send message..." autocomplete="off"
                     autofocus>

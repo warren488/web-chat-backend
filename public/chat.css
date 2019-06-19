@@ -92,6 +92,7 @@ button:disabled {
 }
 
 .chat__sidebar {
+    border-right: 1px solid lightgray;
     overflow-y: scroll;
     width: 260px;
     height: 100vh;
@@ -168,6 +169,7 @@ button:disabled {
     max-width: 80%;
     width: fit-content;
 }
+
 .message:hover {
     background-color: #f6faff;
 }
@@ -232,7 +234,10 @@ li.highlighted {
     background-color: #337ba867;
     border-radius: 10px;
     /* background-color: rgb(202, 202, 202, 0.5); */
+}
 
+#users .highlighted {
+    color: white;
 }
 
 .no-show {
@@ -285,4 +290,5 @@ li.highlighted {
 
 #users ul li {
     cursor: pointer;
+    font-weight: bold;
 }
