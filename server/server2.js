@@ -59,7 +59,6 @@ app.get('/users/me/:friendship_id', HTMLauthenticate, async (req, res) => {
     if (!currentChat) {
       currentChat = await req.user.startChat({ friendship_id: req.params.friendship_id, messages: [] })
     }
-    console.log(req.user.username)
     res.render('chat.hbs', {
       friends: friends,
       messages: currentChat.messages,

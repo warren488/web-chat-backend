@@ -231,7 +231,10 @@ button:disabled {
 .highlighted,
 .highlighted:hover,
 li.highlighted {
-    background-color: #337ba8;
+    background-color: #337ba867;
+    border-radius: 10px;
+    /* background-color: rgb(202, 202, 202, 0.5); */
+
 }
 
 .no-show {

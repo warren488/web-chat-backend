@@ -177,7 +177,7 @@ var replyClick = (e) => {
         cancelReply()
         return replyClick(e)
     }
-    var message = $(e).parent().parent()
+    var message = $(e).parent().parent().parent()
     hID = message.prop('id').replace('msg-', '')
     message.addClass('highlighted')
     $('#cancel-reply').removeClass('no-show')
@@ -190,7 +190,8 @@ var replyClick = (e) => {
 
 function cancelReply() {
     $('#cancel-reply').addClass('no-show')
-    $(`#msg-${hID}`).removeClass('highlighted')
+    // $(`#${hID}`).removeClass('highlighted')
+    document.querySelector(`#${hID}`).classList.remove('highlighted')
     $('#send-button').text('Send')
     $('#msg-txt').attr('placeholder', 'send message...')
     hID = null
