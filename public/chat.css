@@ -136,6 +136,7 @@ button:disabled {
 }
 
 .chat__footer {
+    position: relative;
     display: flex;
     flex-shrink: 0
 }
@@ -194,9 +195,6 @@ button:disabled {
     }
     .chat__footer {
         flex-direction: column
-    }
-    .chat__footer form {
-        margin-bottom: 10px
     }
     .chat__footer button {
         margin-right: 0
