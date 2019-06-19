@@ -47,7 +47,8 @@ app.get('/users/me/:friendship_id', HTMLauthenticate, (req, res) => {
   })
   res.render('chat.hbs', {
     friends: friends,
-    messages: req.user.messages
+    messages: req.user.messages,
+    username: req.user.username
   })
 })
 

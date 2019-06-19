@@ -13,7 +13,8 @@
 <body class="chat">
 
     <div class="chat__sidebar" id="side">
-        <h3>People</h3> <h3 id="close" class="mobile">X</h3>
+        <h3>People</h3>
+        <h3 id="close" class="mobile">X</h3>
         <div class="chat__footer" id="add-friend">
             <form id="friend-form">
                 <input type="text" id="fri-txt" name="username" placeholder="add friend..." autocomplete="off"
@@ -33,31 +34,34 @@
 
         <ol class="chat__messages" id="messages">
             {{#each messages}}
-            <li class='message' id='{{_id}}'>
-                <div class='message__title'>
-                    <h4>{{from}}</h4>
-                    <span>{{createdAt}}</span>
-                    <p class='reply' onclick="replyClick(this)">reply</p>
-                    <!-- <div class="dropdown">
+            <li {{#equal ../username from }}class="me"{{/equal}} id='{{_id}}'>
+                <div class="message">
+                    <div class='message__title'>
+                        <h4>{{from}}</h4>
+                        <span>{{createdAt}}</span>
+                        <p class='reply' onclick="replyClick(this)">reply</p>
+                        <!-- <div class="dropdown">
                         <span>Mouse over me</span>
                         <div class="dropdown-content">
                         <p>Hello World!</p>
                         </div>
                       </div> -->
-                </div>
-                <div class="message__body">
-                    <p class="wrap">{{text}}</p>
-                    {{#if quoted}}
-                    {{#quoted}}
-                    <span class="quoted">
-                        <div class='message__title'>
-                            <h4>{{from}}</h4>
-                            <span>{{createdAt}}</span>
-                        </div>
+                    </div>
+                    <div class="message__body">
                         <p class="wrap">{{text}}</p>
-                    </span>
-                    {{/quoted}}
-                    {{/if}}
+                        {{#if quoted}}
+                        {{#quoted}}
+                        <span class="quoted">
+                            <div class='message__title'>
+                                <h4>{{from}}</h4>
+                                <span>{{createdAt}}</span>
+                            </div>
+                            <p class="wrap">{{text}}</p>
+                        </span>
+                        {{/quoted}}
+                        {{/if}}
+                    </div>
+
                 </div>
             </li>
             {{/each}}

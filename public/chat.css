@@ -167,10 +167,6 @@ button:disabled {
     max-width: 80%;
     width: fit-content;
 }
-.message.me {
-    float: right;
-}
-
 .message:hover {
     background-color: #f6faff;
 }
@@ -222,6 +218,14 @@ button:disabled {
     margin-left: 5%;
     margin-top: 5px;
     width: 95%;
+}
+
+.chat__messages li {
+    display: flex;
+}
+
+.chat__messages li.me {
+    justify-content: flex-end;
 }
 
 .highlighted,
