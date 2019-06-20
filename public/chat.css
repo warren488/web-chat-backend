@@ -163,7 +163,7 @@ button:disabled {
     background-color: transparent;
 }
 
-.close img, #cancel-reply img {
+#close img, #cancel-reply img {
     height: 1rem;
 }
 
