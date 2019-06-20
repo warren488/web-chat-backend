@@ -183,7 +183,7 @@ var replyClick = (e) => {
     hID = message.prop('id').replace('msg-', '')
     message.addClass('highlighted')
     $('#cancel-reply').removeClass('no-show')
-    $('#send-button').text('Reply')
+    // $('#send-button').text('Reply')
     $('#msg-txt').attr('placeholder', 'reply to message...')
     $('#msg-txt').focus()
         // $('#message-form').append(cancelHtml)
@@ -199,7 +199,7 @@ function cancelReply() {
         replyTo.classList.remove('highlighted')
     }
 
-    $('#send-button').text('Send')
+    // $('#send-button').text('Send')
     $('#msg-txt').attr('placeholder', 'send message...')
     hID = null
 }

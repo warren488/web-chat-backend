@@ -219,6 +219,7 @@ userSchema.methods.addMessage = async function addMessage(friendship_id, message
 
     let _id = new mongoose.Types.ObjectId()
     saveMessage = { _id, ...message }
+    console.log(this.__v);
     this.chats[index].messages = this.chats[index].messages
         .concat([saveMessage])
     await this.save()

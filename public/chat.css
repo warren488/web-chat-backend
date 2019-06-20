@@ -152,7 +152,23 @@ button:disabled {
 }
 
 .chat__footer form input {
-    margin-left: 10px
+    margin-left: 10px;
+    border-radius: 20px;
+}
+
+#menu-button img {
+    width: 100%;
+}
+#cancel-reply {
+    background-color: transparent;
+}
+
+.close img, #cancel-reply img {
+    height: 1rem;
+}
+
+#cancel-reply img {
+    margin-right: 0px;
 }
 
 .chat__footer input {
@@ -242,10 +258,6 @@ li.highlighted {
 
 .no-show {
     display: none
-}
-
-#cancel-reply {
-    background-color: red;
 }
 
 .wrap {

@@ -14,7 +14,7 @@
 
     <div class="chat__sidebar" id="side">
         <h3>People</h3>
-        <h3 id="close" class="mobile">X</h3>
+        <h3 id="close" class="mobile"><img src="/images/close.svg" alt=""></h3>
         <div class="chat__footer" id="add-friend">
             <form id="friend-form">
                 <input type="text" id="fri-txt" name="username" placeholder="add friend..." autocomplete="off"
@@ -32,7 +32,7 @@
     </div>
     <div class="chat__main">
         <header class="chat__heading">
-            <button id="menu-button" type="button" class="mobile"><img src="/images/menu.png" alt=""></button>
+            <button id="menu-button" type="button" class="mobile"><img src="/images/menu.svg" alt=""></button>
             <h1> {{friend}}</h1>
             <div class="typing" style="margin-left: 3px; opacity: 0; display: inline-block">typing...</div>
         </header>
@@ -71,13 +71,13 @@
             {{/each}}
         </ol>
         <div class="chat__footer">
-            <br>
             <form id="message-form">
                 <button id="emoji-button" type="button">&#128578;</button>
                 <input type="text" id="msg-txt" name="message" placeholder="send message..." autocomplete="off"
                     autofocus>
-                <button id="send-button"><img src="/images/send.png" alt=""></button>
-                <button class="no-show" onclick="cancelReply(this)" id="cancel-reply">X</button>
+                <button id="send-button"><img src="/images/send.svg" alt=""></button>
+                <button type="button" class="no-show" onclick="cancelReply(this)" id="cancel-reply"><img
+                        src="/images/close.svg" alt=""></button>
             </form>
         </div>
         {{!-- add emojis to the bottom part of the chat interface --}}

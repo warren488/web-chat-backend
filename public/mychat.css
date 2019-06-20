@@ -84,9 +84,6 @@
     opacity: 0.6;
     top: -42px;
   }
-  .chat__footer input[type="text"] {
-    flex-grow: 0;
-  }
 }
 
 #send-button {
