@@ -57,12 +57,14 @@ socket.on('newMessage', data => {
         template = $('#message-template').html()
     }
     var html = Mustache.render(template, templateData)
-    console.log(data)
+    var messageNode = createElementFromHTML(html)
+
+    console.log(messageNode)
     // let name = $.deparam(window.location.search).name
     // let chatChild = document.createElement('li')
     // chatChild.innerHTML = `${(data.name === name) ? 'me' : data.name}: ${data.text}`
     $('#messages')
-        .html($('#messages').html() + html)
+        .append(messageNode)
     // .hover(messageHoverIn, messageHoverOut)
 
     scrollBottom()
@@ -95,7 +97,7 @@ $('#message-form').on('submit', () => {
     // }
     let text = $('#msg-txt').val()
     if (text.trim().length > 0) {
-        socket.emit('sendMessage', { hID, text: text, name: $.deparam(window.location.search).name }, () => console.log('message sent'))
+        socket.emit('sendMessage', { hID, text: text, name: $.deparam(window.location.search).name }, (data) => console.log(data))
         $('#msg-txt').focus()
         $('#msg-txt').val('')
         cancelReply()
@@ -144,3 +146,11 @@ function cancelReply() {
     $('#msg-txt').attr('placeholder', 'send message...')
     hID = null
 }
+
+function createElementFromHTML(htmlString) {
+    var div = document.createElement('div');
+    div.innerHTML = htmlString.trim();
+  
+    // Change this to div.childNodes to support multiple top-level nodes
+    return div.firstChild; 
+  }

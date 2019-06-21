@@ -61,10 +61,10 @@ module.exports = async function ioconnection(io, friendship_id, token, activeUse
                 let friend = await User.findById(id)
                 await friend.addMessage(friendship_id, { _id: msgId, ...message })
                 io.to(friendship_id).emit('newMessage', { id: msgId, ...message })
-                return callback()
+                return callback(null, msgId)
 
             } catch (error) {
-                console.log(error)
+                callback(error, null)
             }
         })
 

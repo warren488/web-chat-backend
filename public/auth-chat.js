@@ -32,12 +32,12 @@ socket.on('newMessage', data => {
         text: data.text,
         from: (data.from === getUsername() ? 'me' : data.from),
         class: (data.from === getUsername() ? 'me' : 'them'),
-        createdAt: data.createdAt.toLocaleString(),
+        createdAt: new Date(data.createdAt).toLocaleString(),
         id: `${data.id}`
     }
     if (data.quoted) {
         templateData.quotedFrom = (data.quoted.from === getUsername() ? 'me' : data.quoted.from)
-        templateData.quotedAt = data.quoted.createdAt.toLocaleString()
+        templateData.quotedAt = new Date(data.quoted.createdAt).toLocaleString()
         templateData.quotedMessage = data.quoted.text
         template = messageQuoteTemplate
     } else {
@@ -46,13 +46,9 @@ socket.on('newMessage', data => {
     console.log(templateData);
 
     var html = Mustache.render(template, templateData)
-    console.log(data)
-        // let name = $.deparam(window.location.search).name
-        // let chatChild = document.createElement('li')
-        // chatChild.innerHTML = `${(data.name === name) ? 'me' : data.name}: ${data.text}`
-    $('#messages')
-        .html($('#messages').html() + html)
-        // .hover(messageHoverIn, messageHoverOut)
+    var nodeHTML = createElementFromHTML(html)
+    console.log(nodeHTML);
+    $('#messages').append(nodeHTML)
 
     scrollBottom()
 
@@ -88,7 +84,24 @@ $("#message-form").submit(e => {
     e.preventDefault()
     let text = $('#msg-txt').val()
     if (text.trim().length > 0) {
-        socket.emit('sendMessage', { hID, text: text, name: $.deparam(window.location.search).name }, () => console.log('message sent'))
+
+        var templateData = {
+            text: text,
+            from: 'me',
+            class: 'me',
+            createdAt: new Date().toLocaleString(),
+            id: ``
+        }
+        var template = messageTemplate
+        var html = Mustache.render(template, templateData)
+        var nodeHTML = createElementFromHTML(html)
+        console.log(nodeHTML);
+        $('#messages').append(nodeHTML)
+    
+        scrollBottom()
+
+
+        socket.emit('sendMessage', { hID, text: text, name: $.deparam(window.location.search).name }, (err, data) => nodeHTML.id = data)
         $('#msg-txt').focus()
         $('#msg-txt').val('')
         cancelReply()
@@ -252,3 +265,11 @@ function getUsername() {
     return document.cookie.replace((/(?:(?:^|.*;\s*)username\s*\=\s*([^;]*).*$)|^.*$/), "$1")
 }
 $('document').ready(e => scrollBottom(true))
+
+function createElementFromHTML(htmlString) {
+    var div = document.createElement('div');
+    div.innerHTML = htmlString.trim();
+  
+    // Change this to div.childNodes to support multiple top-level nodes
+    return div.firstChild; 
+  }
