@@ -9,7 +9,6 @@ async function createUser(req, res) {
         let user = new User({...req.body, chats: [] })
 
         let token = await user.generateAuthToken()
-        console.log(req.body);
         user = await user.save()
         return res.status(200).send({ user, token })
     } catch (error) {
@@ -27,10 +26,8 @@ async function login(req, res) {
             user = await User.findByToken(req.body.token)
 
         } else {
-            console.log('finbycred', req.body);
 
             user = await User.findByCredentials('username', req.body)
-            console.log('found', user);
 
             token = await user.generateAuthToken()
         }
@@ -76,9 +73,7 @@ async function HTMLauthenticate(req, res, next) {
     let token = req.cookies.token;
     let user
     try {
-        console.log(token)
         user = await User.findByToken(token)
-        console.log(user)
         if (!user) {
             throw 'not fond'
         }
@@ -93,7 +88,6 @@ async function HTMLauthenticate(req, res, next) {
 }
 
 async function addFriend(req, res) {
-    console.log(req.body.username);
 
     try {
         let friend = await User.findOne({
@@ -120,7 +114,6 @@ async function chatRedirect(req, res) {
 
         chat = await req.user.findUniqueChat(fid, 'friendship_id')
 
-        console.log(chat);
         if (chat !== undefined) {
             return res.status(278).send({ redirect: '/users/me/' + chat.friendship_id.toString() })
 
@@ -128,7 +121,6 @@ async function chatRedirect(req, res) {
             let [friend] = req.user.friends.filter(friend => { return friend._id.toString() === fid })
             if (friend) {
                 chat = await req.user.startChat({ friendship_id: fid, messages: [] });
-                console.log(req.user);
 
                 return res.status(278).send({ redirect: '/users/me/' + chat.friendship_id.toString() })
             } else {

@@ -38,7 +38,8 @@
         </header>
         <ol class="chat__messages" id="messages">
             {{#each messages}}
-            <li {{#equal ../username from }}class="me" {{/equal}} id='{{_id}}'>
+            <li class="{{#equal ../username from 'is' }}{{status}} {{/equal}} {{#equal ../username from 'is' }}me{{/equal}}"
+                id='{{_id}}'>
                 <div class="message">
                     <div class='message__title'>
                         <h4>{{from}}</h4>

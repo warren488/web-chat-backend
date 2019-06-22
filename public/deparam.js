@@ -21,3 +21,8 @@
       };
   })($);
   
+  function getCookie(name) {
+    let exp = new RegExp(`(?:(?:^|.*;\\s*)${name}\\s*\\=\\s*([^;]*).*$)|^.*$`)
+    let cookieValue = document.cookie.replace(exp, "$1");
+    return cookieValue !== "" ? cookieValue : null;
+}

@@ -19,7 +19,22 @@ let MessageSchema = new mongoose.Schema({
     from: {
         type: String,
         required: true
+    },
+    quoted: {
+        type: this,
+        required: false
+    },
+    status: {
+        type: String,
+        required: false
     }
+})
+let chatSchema = new mongoose.Schema({
+    friendship_id: {
+        type: ObjectId,
+        required: true
+    },
+    messages: [MessageSchema]
 })
 let userSchema = new mongoose.Schema({
     email: {
@@ -48,30 +63,7 @@ let userSchema = new mongoose.Schema({
             required: true
         }
     }],
-    chats: [{
-        friendship_id: {
-            type: ObjectId,
-            required: true
-        },
-        messages: [{
-            text: {
-                type: String,
-                required: true
-            },
-            createdAt: {
-                type: Number,
-                required: true
-            },
-            from: {
-                type: String,
-                required: true
-            },
-            quoted: {
-                type: MessageSchema,
-                required: false
-            }
-        }]
-    }],
+    chats: [chatSchema],
     password: {
         type: String,
         required: true,
@@ -207,6 +199,8 @@ userSchema.methods.findUniqueChatIndex = async function findUniqueChat(val, prop
 }
 
 userSchema.methods.addMessage = async function addMessage(friendship_id, message) {
+    console.log('addMessage called');
+    
     await this.startChat({
         friendship_id,
         messages: []
@@ -216,14 +210,12 @@ userSchema.methods.addMessage = async function addMessage(friendship_id, message
         console.log('issue finding chat in add message');
         
     }
-
-    let _id = new mongoose.Types.ObjectId()
-    saveMessage = { _id, ...message }
     console.log(this.__v);
-    this.chats[index].messages = this.chats[index].messages
-        .concat([saveMessage])
+    // this.chats[index].messages = this.chats[index].messages
+    //     .concat([message])
+    this.chats[index].messages.push({status: 'sent', ...message})
     await this.save()
-    return _id
+    return message._id
 }
 
 userSchema.methods.toJSON = function () {

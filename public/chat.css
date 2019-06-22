@@ -159,11 +159,13 @@ button:disabled {
 #menu-button img {
     width: 100%;
 }
+
 #cancel-reply {
     background-color: transparent;
 }
 
-#close img, #cancel-reply img {
+#close img,
+#cancel-reply img {
     height: 1rem;
 }
 
@@ -208,16 +210,34 @@ button:disabled {
     * {
         font-size: 1rem
     }
+
     .chat__sidebar {
         display: none
     }
+
     .chat__footer {
         flex-direction: column
     }
+
     .chat__footer button {
         margin-right: 0
     }
 }
+
+
+li.sent .message::after {
+    content: '\2713';
+    color: blue;
+}
+li.received .message::after {
+    content: '\2714';
+    color: green;
+}
+li[id=""].pending .message::after {
+    content: '\2755';
+    color: #900;
+}
+
 
 .reply {
     color: #999;

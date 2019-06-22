@@ -1,20 +1,28 @@
-messageTemplate = `<li class="{{class}}" id='{{id}}'><div class='message'> <div class='message__title'>    <h4>{{from}}</h4>    <span>{{createdAt}}</span>    <p class='reply' onclick="replyClick(this)">reply</p>    <!-- <div class="dropdown">            <span>Mouse over me</span>            <div class="dropdown-content">            <p>Hello World!</p>            </div>          </div> --></div><div class="message__body">    <p class="wrap">{{text}}</p> </div></div></li>`
-messageQuoteTemplate = `<li class="{{class}}" id='{{id}}'><div class='message'><div class='message__title'>    <h4>{{from}}</h4>    <span>{{createdAt}}</span>    <p class='reply' onclick="replyClick(this)" >reply</p>    <!-- <div class="dropdown">            <span>Mouse over me</span>            <div class="dropdown-content">            <p>Hello World!</p>            </div>          </div> --></div><div class="message__body">    <p class="wrap"> {{text}}</p>    <span class="quoted">        <div class='message__title'>            <h4>{{quotedFrom}}</h4>            <span>{{quotedAt}}</span>        </div>         <p class="wrap">{{quotedMessage}}</p>            </span></div></div></li>`
+messageTemplate = `<li class="{{class}} {{status}}" id='{{id}}'><div class='message pending'> <div class='message__title'>    <h4>{{from}}</h4>    <span>{{createdAt}}</span>    <p class='reply' onclick="replyClick(this)">reply</p>    <!-- <div class="dropdown">            <span>Mouse over me</span>            <div class="dropdown-content">            <p>Hello World!</p>            </div>          </div> --></div><div class="message__body">    <p class="wrap">{{text}}</p> </div></div></li>`
+messageQuoteTemplate = `<li class="{{class}} {{status}}" id='{{id}}'><div class='message pending'><div class='message__title'>    <h4>{{from}}</h4>    <span>{{createdAt}}</span>    <p class='reply' onclick="replyClick(this)" >reply</p>    <!-- <div class="dropdown">            <span>Mouse over me</span>            <div class="dropdown-content">            <p>Hello World!</p>            </div>          </div> --></div><div class="message__body">    <p class="wrap"> {{text}}</p>    <span class="quoted">        <div class='message__title'>            <h4>{{quotedFrom}}</h4>            <span>{{quotedAt}}</span>        </div>         <p class="wrap">{{quotedMessage}}</p>            </span></div></div></li>`
 var hID
 var socket = io();
 var typing = {};
 
 socket.on("connect", () => {
+    /**
+     * chat page specific logic for getting frienship ID
+     * TODO: should really use this to determine if to allow functionality
+     * on the page
+     * getCookie - from deparam.js
+     */
+    var friendship_id = window.location.pathname.split('/')[3]
+    socket.emit('checkin', { friendship_id  , token: getCookie("token") }, (err, data) => (!err ? console.log('checking successful') : console.log('checking unsuccessful') ))
     console.log('connected');
 
 })
 socket.on('newMessage', data => {
+    // if its us then do nothing
+    if (data.from === getUsername()) {
+        return
+    }
     // if we get a message about the other persons typing
     if (data.type === 'typing') {
-        // if its us then do nothing
-        if (data.from === getUsername()) {
-            return
-        }
         // if its saying the person has started typing
         if (data.status === 'start') {
             document.querySelector('.typing').style.opacity = '1'
@@ -24,9 +32,7 @@ socket.on('newMessage', data => {
         }
         return
     }
-    if (data.from !== getUsername()) {
-        notifyMe({ from: data.from, message: data.text })
-    }
+    notifyMe({ from: data.from, message: data.text })
     var template
     var templateData = {
         text: data.text,
@@ -90,7 +96,8 @@ $("#message-form").submit(e => {
             from: 'me',
             class: 'me',
             createdAt: new Date().toLocaleString(),
-            id: ``
+            id: ``,
+            status: 'pending'
         }
         var template = messageTemplate
         var html = Mustache.render(template, templateData)
@@ -101,7 +108,11 @@ $("#message-form").submit(e => {
         scrollBottom()
 
 
-        socket.emit('sendMessage', { hID, text: text, name: $.deparam(window.location.search).name }, (err, data) => nodeHTML.id = data)
+        socket.emit('sendMessage', { hID, text: text, name: $.deparam(window.location.search).name }, (err, data) => {
+            nodeHTML.id = data
+            nodeHTML.classList.remove("pending")
+            nodeHTML.classList.add("sent")
+        })
         $('#msg-txt').focus()
         $('#msg-txt').val('')
         cancelReply()
