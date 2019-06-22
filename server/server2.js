@@ -59,6 +59,9 @@ app.get("/home", HTMLauthenticate, (req, res) => {
   });
   // res.sendFile(path.join(__dirname + '/../views/home.hbs'));
 });
+app.get('/', (req, res) => {
+    res.redirect('/home')
+})
 
 app.get("/users/me/:friendship_id", HTMLauthenticate, async (req, res) => {
   try {
