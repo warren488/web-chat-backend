@@ -106,29 +106,11 @@ async function addFriend(req, res) {
     }
 }
 
+// TODO: eventually remove after the frontend uses direct links
 async function chatRedirect(req, res) {
 
     fid = req.body.friendship_id.toString()
-    let chat
-    if (req.user.chats) {
-
-        chat = await req.user.findUniqueChat(fid, 'friendship_id')
-
-        if (chat !== undefined) {
-            return res.status(278).send({ redirect: '/users/me/' + chat.friendship_id.toString() })
-
-        } else {
-            let [friend] = req.user.friends.filter(friend => { return friend._id.toString() === fid })
-            if (friend) {
-                chat = await req.user.startChat({ friendship_id: fid, messages: [] });
-
-                return res.status(278).send({ redirect: '/users/me/' + chat.friendship_id.toString() })
-            } else {
-                return res.status(500).send({ message: 'error starting chat' })
-            }
-
-        }
-    }
+    return res.status(278).send({ redirect: '/users/me/' + fid })
 
 }
 

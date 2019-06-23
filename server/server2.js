@@ -1,17 +1,32 @@
+/**
+ * @file This file is the main entrypoint and manages all the server setup
+ * as well as the routes
+ * @author Warren Scantlebury
+ * @namespace Server
+ */
+
 const path = require("path");
 const http = require("http");
 const express = require("express");
 const socketIO = require("socket.io");
 const apiRouter = require("./api");
+const Message = require('./models/Message')
 const attachListeners = require("./socket/chat.io");
 const bodyParser = require("body-parser");
 const { HTMLauthenticate, authenticate, emojis } = require("./services");
 const cookieParser = require("cookie-parser");
 var hbs = require("hbs");
+
+hbs.registerHelper("equal", 
 /**
- * @param type - used to determine wether we are doing == or !=
+ * Handlebars helper used to determing wether 2 values are equal or not
+ * @function Server.isEqual
+ * @param {*} lvalue left hand side value
+ * @param {*} rvalue reght hand side value
+ * @param {*} type the type of operation
+ * @param {*} options additional options
  */
-hbs.registerHelper("equal", function(lvalue, rvalue, type, options) {
+function isEqual(lvalue, rvalue, type, options) {
   if (arguments.length < 3)
     throw new Error("Handlebars Helper equal needs 2 parameters");
   if (type === "not") {
@@ -78,23 +93,38 @@ app.get("/users/me/:friendship_id", HTMLauthenticate, async (req, res) => {
       }
       return returnVal;
     });
-    let currentChat = await req.user.findUniqueChat(
-      req.params.friendship_id,
-      "friendship_id"
-    );
-    if (!currentChat) {
-      currentChat = await req.user.startChat({
-        friendship_id: req.params.friendship_id,
-        messages: []
-      });
-    }
+    /**
+     * The messages contained in the current chat between these 2 users
+     * @var {Array} currentChat 
+     * @memberof Server
+     */
+    let currentChat = await req.user.getChat(req.params.friendship_id)
     res.render("chat.hbs", {
       friends: friends,
-      messages: currentChat.messages,
+      messages: currentChat,
       username: req.user.username,
       friend: curFriend,
       emojis
     });
+    // TODO: this can possible become inefficient
+    await Promise.all(currentChat.filter(async message => {
+      if(message.from !== req.user.username){
+        // update this message's status
+        message.status = 'received';
+        return Promise.all([Message.findOneAndUpdate({
+          // update the status of the other message that corresponds to this 
+          // one
+          msgId: message.msgId, 
+          user_id: {
+            $ne: message.user_id
+          }
+        }, {$set: { status: 'received' }}).then(msg => {
+          io.to(req.params.friendship_id).emit('received', [msg._id])
+        }),
+        message.save()])
+      }
+      
+    }))
   } catch (error) {
     res.send("<h1>ERROR, WORKING TO FIX IT<h1>");
     console.log(error);

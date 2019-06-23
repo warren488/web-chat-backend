@@ -1,41 +1,17 @@
+/**
+ * @file The User model for the DB
+ * @author Warren Scantlebury
+ * @namespace User
+ */
 const mongoose = require("mongoose")
 const validator = require("validator")
-// const Joi = require("joi")
 const jwt = require("jsonwebtoken")
 const { SALT } = require("../config")
 const hash = require("../services/hash")
 const bcrypt = require("bcryptjs")
 const ObjectId = mongoose.Schema.Types.ObjectId
+const Message = require('./Message')
 
-let MessageSchema = new mongoose.Schema({
-    text: {
-        type: String,
-        required: true
-    },
-    createdAt: {
-        type: Number,
-        required: true
-    },
-    from: {
-        type: String,
-        required: true
-    },
-    quoted: {
-        type: this,
-        required: false
-    },
-    status: {
-        type: String,
-        required: false
-    }
-})
-let chatSchema = new mongoose.Schema({
-    friendship_id: {
-        type: ObjectId,
-        required: true
-    },
-    messages: [MessageSchema]
-})
 let userSchema = new mongoose.Schema({
     email: {
         type: String,
@@ -63,7 +39,6 @@ let userSchema = new mongoose.Schema({
             required: true
         }
     }],
-    chats: [chatSchema],
     password: {
         type: String,
         required: true,
@@ -81,26 +56,12 @@ let userSchema = new mongoose.Schema({
     }]
 })
 
-
-userSchema.methods.validateSchema = async (schema) => {
-    // may be overkill... have to find out if this offers benefits over the mongoose validation
-    // const result = Joi.validate(schema, Joi.object({
-    //     email: Joi.string().required(),
-    //     username: Joi.string().required(),
-    //     password: Joi.string().required(),
-    //     tokens: Joi.array().items(Joi.object({
-    //         access: Joi.string(),
-    //         token: Joi.string()
-    //     }))
-
-    // }))
-    if (result.error) {
-        throw result.error
-    }
-    return schema
-}
-
-userSchema.methods.generateAuthToken = async function generateAuthToken() {
+/**
+ * generate an authentication token for the user 
+ * @returns {String} token that was generated
+ * @memberof User
+ */
+async function generateAuthToken() {
 
     let token = jwt.sign({ _id: this._id }, SALT)
     this.tokens = this.tokens.concat([{
@@ -111,53 +72,59 @@ userSchema.methods.generateAuthToken = async function generateAuthToken() {
     return token
 }
 
-userSchema.methods.startChat = async function startChat(chat) {
-    //  TODO: MAKE SURE THAT THE USER IS A FRIEND FIRST
-    // check for existing chat first
-    let newChat = await this.findUniqueChat(chat.friendship_id, 'friendship_id')
-    if (!newChat) {
-        
-        newChat = { _id: new mongoose.Types.ObjectId(), ...chat }
-        this.chats = this.chats.concat([newChat])
-        await this.save()
-
-    }
-    return newChat
+/**
+ * get a chat between this user and another using the frienship id
+ * @param {String} friendship_id the Id of the friendship for the chat we want to get
+ * @param {Number} limit the limit of messages we want from the chat
+ * @todo implement the limit and utilize it
+ * @memberof User
+ */
+async function getChat(friendship_id, limit) {
+    let chat = await Message.find(
+      {
+        user_id: this._id,
+        friendship_id: friendship_id
+      });
+    return chat
 }
 
-userSchema.methods.addFriend = async function addFriend(id, username) {
+/**
+ * 
+ * @param {String} id ID of the friend we want to add
+ * @param {String} username username of the friend we want to add
+ * @memberof User
+ */
+async function addFriend(id, username) {
     let friend = { _id: new mongoose.Types.ObjectId(), id, username }
     this.friends = this.friends.concat([friend])
     await this.save()
     return friend
 }
 
-userSchema.methods.reAddFriend = async function reAddFriend(friend_id, username, friendship_id) {
+/**
+ * This function is used when we add a friend for a user and have updated their friendslists
+ * we now want to update the friendslist of their new friend with out pre generated friendship id
+ * @param {String} friend_id ID of the friend we are adding
+ * @param {String} username username of the friend we are adding
+ * @param {String} friendship_id friendship ID that will identify the friendship (same for both users)
+ * @memberof User
+ */
+async function reAddFriend(friend_id, username, friendship_id) {
     let friend = { _id: friendship_id, id: friend_id, username }
     this.friends = this.friends.concat([friend])
     await this.save()
     return friend
 }
 
-userSchema.methods.findUniqueChat = async function findUniqueChat(val, propertyname) {
-    // currently only works for strings
-    // method doesnt actually ensure uniqueness, rather it only returns one value 
-    let index
-    let chats = this.chats.filter((chat, index) => {
-        if (chat) {
-
-            return chat[propertyname].toString() === val
-        }
-        return false
-
-    })
-    if (chats.length > 1) {
-        console.warn('using find unique chat with non unique identifiers');
-    }
-    return chats[0]
-}
-
-userSchema.methods.findFriend = async function findFriend(val, propertyname) {
+/**
+ * This function finds a friend of the current user that has a property matching the given value
+ * (all processing done in memory)
+ * @param {*} val value of the property we want to search for on the friend
+ * @param {String} propertyname the name of the property we want search for
+ * @memberof User
+ */
+// use array queries instead of looping (faster for smaller data?)
+async function findFriend(val, propertyname) {
     let friend = this.friends.find(friend => {
         if (friend) {
             return friend[propertyname].toString() === val
@@ -167,58 +134,26 @@ userSchema.methods.findFriend = async function findFriend(val, propertyname) {
     return friend
 }
 
-userSchema.methods.getMessage = async function getMessage(friendship_id, msgId) {
-    let chatIndex = await this.findUniqueChatIndex(friendship_id, 'friendship_id')
-    if (chatIndex === -1) {
-        // await this.startChat({ friendship_id, messages: [] })
-        // chatIndex = await this.findUniqueChatIndex(friendship_id, 'friendship_id')
-        throw ({message: 'cannot find chat'})
-    }
-
-    return this.chats[chatIndex].messages.find(message => {
-        if (message) {
-            return message._id.toString() === msgId
-        }
-        return false
-
-    })
+/**
+ * The all important function to add messages to the DB for this particular user only
+ * @param {String} friendship_id friendship id of the message we want to add
+ * @param {Object} message an object containing message data
+ * @memberof User
+ */
+// FIXME: should this really be attached to the user schema?
+async function addMessage(friendship_id, message) {
+    // TODO: maybe we only need the status for our message as the user wont see status for messages
+    // we sent, in which case the status would be set outside
+    const newMessage = new Message({ status: 'sent', user_id: this._id, friendship_id, ...message})
+    await newMessage.save()
+    return newMessage._id
 }
 
-userSchema.methods.findUniqueChatIndex = async function findUniqueChat(val, propertyname) {
-    // method doesnt actually ensure uniqueness, rather it only returns one value 
-    let index = this.chats.findIndex((chat, index) => {
-        if (chat) {
-
-            return chat[propertyname].toString() === val
-        }
-        return false
-
-    })
-
-    return index
-}
-
-userSchema.methods.addMessage = async function addMessage(friendship_id, message) {
-    console.log('addMessage called');
-    
-    await this.startChat({
-        friendship_id,
-        messages: []
-    })
-    let index = await this.findUniqueChatIndex(friendship_id, 'friendship_id')
-    if(index === -1){
-        console.log('issue finding chat in add message');
-        
-    }
-    console.log(this.__v);
-    // this.chats[index].messages = this.chats[index].messages
-    //     .concat([message])
-    this.chats[index].messages.push({status: 'sent', ...message})
-    await this.save()
-    return message._id
-}
-
-userSchema.methods.toJSON = function () {
+/**
+ * determines the value of a user when connverted to a json object 
+ * @memberof User
+ */
+function toJSON() {
     user = this
     return {
         id: user._id,
@@ -227,7 +162,12 @@ userSchema.methods.toJSON = function () {
     }
 }
 
-userSchema.statics.findByToken = async function findByToken(token) {
+/**
+ * find a user by their token, which is essence validates a user/token as well
+ * @param {String} token the token of the user we want to find
+ * @memberof User
+ */
+async function findByToken(token) {
     let User = this
     let decoded = jwt.verify(token, SALT)
     let user = await User.findOne({
@@ -241,7 +181,15 @@ userSchema.statics.findByToken = async function findByToken(token) {
     return user
 }
 
-userSchema.statics.findByCredentials = async function findByCredentials(uniqueId, credentials) {
+/**
+ * find and essentially authenticate a user by credentials specified
+ * @param {String} uniqueId name of the credential we want to identify the user by
+ * @param {String} credentials the value for the credential specified
+ * @example 
+ *  findByCredentials('username', { username: 'myuname', password: 'password' })
+ * @memberof User
+ */
+async function findByCredentials(uniqueId, credentials) {
     let user = await this.findOne({
         [uniqueId]: credentials[uniqueId]
     })
@@ -255,9 +203,12 @@ userSchema.statics.findByCredentials = async function findByCredentials(uniqueId
     return user
 }
 
-
-
-userSchema.methods.removeToken = async function removeToken(token) {
+/**
+ * Remove a token for the specific user
+ * @param {String} token the token we would like to remove
+ * @memberof User
+ */
+async function removeToken(token) {
     let user = this
     if (!token) {
         throw ({ message: "no token passed" })
@@ -272,7 +223,26 @@ userSchema.methods.removeToken = async function removeToken(token) {
     await user.save()
 }
 
-userSchema.pre('save', function preSave(next) {
+userSchema.methods.generateAuthToken = generateAuthToken
+userSchema.methods.getChat = getChat
+userSchema.methods.addFriend = addFriend
+userSchema.methods.reAddFriend = reAddFriend
+userSchema.methods.findFriend = findFriend
+userSchema.methods.addMessage = addMessage
+userSchema.methods.toJSON = toJSON
+userSchema.methods.removeToken = removeToken
+userSchema.statics.findByToken = findByToken
+userSchema.statics.findByCredentials = findByCredentials
+
+
+
+
+userSchema.pre('save', 
+/**
+ * uses the mongoose provided pre save to check for a change in the password and hash it before saving
+ * @param {Function} next the next function to allow the save
+ */
+function preSave(next) {
     let user = this
     if (user.chats === undefined) {
         user.chats = []

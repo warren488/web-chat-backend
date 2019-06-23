@@ -1,22 +1,33 @@
-messageTemplate = `<li class="{{class}} {{status}}" id='{{id}}'><div class='message pending'> <div class='message__title'>    <h4>{{from}}</h4>    <span>{{createdAt}}</span>    <p class='reply' onclick="replyClick(this)">reply</p>    <!-- <div class="dropdown">            <span>Mouse over me</span>            <div class="dropdown-content">            <p>Hello World!</p>            </div>          </div> --></div><div class="message__body">    <p class="wrap">{{text}}</p> </div></div></li>`
-messageQuoteTemplate = `<li class="{{class}} {{status}}" id='{{id}}'><div class='message pending'><div class='message__title'>    <h4>{{from}}</h4>    <span>{{createdAt}}</span>    <p class='reply' onclick="replyClick(this)" >reply</p>    <!-- <div class="dropdown">            <span>Mouse over me</span>            <div class="dropdown-content">            <p>Hello World!</p>            </div>          </div> --></div><div class="message__body">    <p class="wrap"> {{text}}</p>    <span class="quoted">        <div class='message__title'>            <h4>{{quotedFrom}}</h4>            <span>{{quotedAt}}</span>        </div>         <p class="wrap">{{quotedMessage}}</p>            </span></div></div></li>`
+/**
+ * @file frontend js for the chat page
+ * @author Warren Scantlebury
+ * @namespace AuthChat
+ */
+var messageTemplate = `<li class="{{class}} {{status}}" id='{{id}}'><div class='message pending'> <div class='message__title'>    <h4>{{from}}</h4>    <span>{{createdAt}}</span>    <p class='reply' onclick="replyClick(this)">reply</p>    <!-- <div class="dropdown">            <span>Mouse over me</span>            <div class="dropdown-content">            <p>Hello World!</p>            </div>          </div> --></div><div class="message__body">    <p class="wrap">{{text}}</p> </div></div></li>`
+var messageQuoteTemplate = `<li class="{{class}} {{status}}" id='{{id}}'><div class='message pending'><div class='message__title'>    <h4>{{from}}</h4>    <span>{{createdAt}}</span>    <p class='reply' onclick="replyClick(this)" >reply</p>    <!-- <div class="dropdown">            <span>Mouse over me</span>            <div class="dropdown-content">            <p>Hello World!</p>            </div>          </div> --></div><div class="message__body">    <p class="wrap"> {{text}}</p>    <span class="quoted">        <div class='message__title'>            <h4>{{quotedFrom}}</h4>            <span>{{quotedAt}}</span>        </div>         <p class="wrap">{{quotedMessage}}</p>            </span></div></div></li>`
+// supposed to speed up future renders
+Mustache.parse(messageTemplate)
+Mustache.parse(messageQuoteTemplate)
 var hID
 var socket = io();
 var typing = {};
 
+// TODO: will this run several times for connection drops?
 socket.on("connect", () => {
-    /**
-     * chat page specific logic for getting frienship ID
-     * TODO: should really use this to determine if to allow functionality
-     * on the page
-     * getCookie - from deparam.js
-     */
     var friendship_id = window.location.pathname.split('/')[3]
+    /**
+     * @function checkin
+     * @todo add a kind of a queue to the DB (or from another service) so that we can get messages from that queue
+     * @todo chat page specific logic for getting frienship ID should really use this to determine if to allow functionality on the page
+     * @memberof AuthChat
+     */
     socket.emit('checkin', { friendship_id  , token: getCookie("token") }, (err, data) => (!err ? console.log('checking successful') : console.log('checking unsuccessful') ))
     console.log('connected');
 
 })
 socket.on('newMessage', data => {
+    console.log(data);
+    
     // if its us then do nothing
     if (data.from === getUsername()) {
         return
@@ -38,12 +49,12 @@ socket.on('newMessage', data => {
         text: data.text,
         from: (data.from === getUsername() ? 'me' : data.from),
         class: (data.from === getUsername() ? 'me' : 'them'),
-        createdAt: new Date(data.createdAt).toLocaleString(),
-        id: `${data.id}`
+        createdAt: new Date(data.createdAt).toLocaleTimeString(),
+        id: `${data.Ids[0]}`
     }
     if (data.quoted) {
         templateData.quotedFrom = (data.quoted.from === getUsername() ? 'me' : data.quoted.from)
-        templateData.quotedAt = new Date(data.quoted.createdAt).toLocaleString()
+        templateData.quotedAt = new Date(data.quoted.createdAt).toLocaleTimeString()
         templateData.quotedMessage = data.quoted.text
         template = messageQuoteTemplate
     } else {
@@ -55,11 +66,22 @@ socket.on('newMessage', data => {
     var nodeHTML = createElementFromHTML(html)
     console.log(nodeHTML);
     $('#messages').append(nodeHTML)
-
+    var friendship_id = window.location.pathname.split('/')[3]
+    console.log(data.Ids)
+    socket.emit('gotMessage', { friendship_id ,token: getToken(), Ids: data.Ids}, () => console.log('message ticked'))
     scrollBottom()
 
 })
-
+socket.on('received', (data) => {
+        data.forEach(Id => {
+            let message = document.getElementById(Id)
+            if(message){
+                message.classList.remove("pending")
+                message.classList.remove("sent")
+                message.classList.add("received")
+            }
+        });
+})
 $("#friend-form").submit(e => {
     let username = e.target.username.value
     if (!isTrueString(username)) {
@@ -90,16 +112,34 @@ $("#message-form").submit(e => {
     e.preventDefault()
     let text = $('#msg-txt').val()
     if (text.trim().length > 0) {
-
+        var template = messageTemplate
         var templateData = {
             text: text,
             from: 'me',
             class: 'me',
-            createdAt: new Date().toLocaleString(),
+            createdAt: new Date().toLocaleTimeString(),
             id: ``,
             status: 'pending'
         }
-        var template = messageTemplate
+        // if we have a quoted message then we need to render that as well
+        if(hID){
+            // funny stuff for handling IDs that start with a number https://stackoverflow.com/questions/20306204/using-queryselector-with-ids-that-are-numbers
+            // essentially if it starts with a number we have to convert that first number to unicode
+            var selector = "#"+hID
+            if(!isNaN(hID[0])){
+                var num = hID[0]
+                var partial = hID.slice(1)
+                selector = "#\\3"+num +" "+partial
+            }
+            var messageNode = document.querySelector(selector)
+            var nameAt = messageNode.querySelector('.message__title').children
+            var quotedMessage = messageNode.querySelector('.message__body .wrap').innerHTML
+            templateData.quotedFrom = nameAt[0].innerHTML
+            templateData.quotedAt = new Date(parseInt(nameAt[1].innerHTML)).toLocaleTimeString()
+            templateData.quotedMessage = quotedMessage
+
+            template = messageQuoteTemplate
+        }
         var html = Mustache.render(template, templateData)
         var nodeHTML = createElementFromHTML(html)
         console.log(nodeHTML);
@@ -175,6 +215,7 @@ $("#my-emojis").click(e => {
     }
 })
 
+// TODO: this seems to be unneeded, just route to the chat route
 function startChat(e) {
     var friendship_id = $(e).attr('id')
 
@@ -211,6 +252,8 @@ var replyClick = (e) => {
     $('#msg-txt').attr('placeholder', 'reply to message...')
     $('#msg-txt').focus()
         // $('#message-form').append(cancelHtml)
+    console.log(hID);
+    
 }
 
 
