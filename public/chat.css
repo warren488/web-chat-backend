@@ -229,13 +229,17 @@ li.sent .message::after {
     content: '\2713';
     color: blue;
 }
+
 li.received .message::after {
     content: '\2714';
     color: green;
 }
+
 li[id=""].pending .message::after {
     content: '\2755';
     color: #900;
+    background: red;
+    border-radius: 3px;
 }
 
 
