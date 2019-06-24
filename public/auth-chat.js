@@ -193,11 +193,12 @@ $("#msg-txt").keydown(e => {
 // open menu
 $("#menu-button").click(e => {
         // sidebar to be opened
-        document.getElementById('side').classList.add('shown-for-mobile')
+        document.getElementById('side').style['max-width'] = '1000px';//.classList.add('shown-for-mobile')
     })
     // close menu
 $("#close").click(e => {
-    document.getElementById('side').classList.remove('shown-for-mobile')
+        document.getElementById('side').style['max-width'] = '0px';//.classList.add('shown-for-mobile')
+        // document.getElementById('side').classList.remove('shown-for-mobile')
 })
 
 

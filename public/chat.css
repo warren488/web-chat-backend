@@ -213,7 +213,9 @@ button:disabled {
     }
 
     .chat__sidebar {
-        display: none
+        /* display: none */
+        max-width: 0px;
+        position: absolute;
     }
 
     .chat__footer {
