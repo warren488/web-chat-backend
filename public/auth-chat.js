@@ -203,9 +203,10 @@ $("#close").click(e => {
 
 // open emojis
 $("#emoji-button").click(e => {
-    // sidebar to be opened
     document.getElementById('my-emojis').classList.toggle('show')
-    scrollBottom();
+    // TODO: this will scroll us to the bottom of the page even if we're are far from there
+    // but for now its better than what currently happens
+    scrollBottom(true);
 })
 
 // add the emoji to the text currently in the chat input field

@@ -1,3 +1,7 @@
+* {
+  transition: all 0.4s ease;
+}
+
 @media screen and (min-width: 600.1px) {
   .mobile {
     display: none;
@@ -63,7 +67,6 @@
 }
 
 .emojis {
-  min-height: 150px;
   overflow-y: scroll;
 }
 
@@ -103,7 +106,9 @@
 }
 
 #my-emojis {
-  display: none;
+  /* display: none; */
+  height: 0px;
+  min-height: 0px;
 }
 
 #my-emojis * {
@@ -111,7 +116,8 @@
 }
 
 #my-emojis.show {
-  display: block;
+  /* display: block; */
+  min-height: 150px;
 }
 
 div.typing {

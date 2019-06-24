@@ -92,6 +92,7 @@ button:disabled {
 }
 
 .chat__sidebar {
+    z-index: 1;
     border-right: 1px solid lightgray;
     overflow-y: scroll;
     width: 260px;
