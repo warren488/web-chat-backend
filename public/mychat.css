@@ -1,6 +1,10 @@
 * {
   transition: all 0.4s ease;
 }
+button:focus {
+  outline-color: lightgray;
+}
+
 
 @media screen and (min-width: 600.1px) {
   .mobile {
@@ -53,6 +57,7 @@
 }
 
 #close {
+  background-color: transparent;
   cursor: pointer;
 }
 

@@ -13,12 +13,18 @@
 <body class="chat">
 
     <div class="chat__sidebar" id="side">
+        <div class="dropdown">
+            <span><img class="small-img" src="/images/user.svg" alt=""></span>
+            <div class="dropdown-content">
+                <p onclick="logout()" >logout</p>
+            </div>
+        </div>
         <h3>People</h3>
-        <h3 id="close" class="mobile"><img src="/images/close.svg" alt=""></h3>
+        <button type="button" id="close" class="mobile"><img src="/images/close.svg" alt=""></button>
         <div class="chat__footer" id="add-friend">
             <form id="friend-form">
                 <input type="text" id="fri-txt" name="username" placeholder="add friend..." autocomplete="off">
-                <button id="add-button">Add</button>
+                <button type="button" id="add-button">Add</button>
             </form>
         </div>
         <div id="users">
@@ -41,7 +47,8 @@
                 id='{{_id}}'>
                 <div class="message">
                     <div class='message__title'>
-                        <h4>{{#equal ../username from 'is' }}me{{/equal}}{{#equal ../username from 'not' }}{{from}}{{/equal}}</h4>
+                        <h4>{{#equal ../username from 'is' }}me{{/equal}}{{#equal ../username from 'not' }}{{from}}{{/equal}}
+                        </h4>
                         <span>{{createdAt}}</span>
                         <p class='reply' onclick="replyClick(this)">reply</p>
                     </div>
@@ -51,7 +58,8 @@
                         {{#quoted}}
                         <span class="quoted">
                             <div class='message__title'>
-                                <h4>{{#equal ../../username from 'is' }}me{{/equal}}{{#equal ../../username from 'not' }}{{from}}{{/equal}}</h4>
+                                <h4>{{#equal ../../username from 'is' }}me{{/equal}}{{#equal ../../username from 'not' }}{{from}}{{/equal}}
+                                </h4>
                                 <span>{{createdAt}}</span>
                             </div>
                             <p class="wrap">{{text}}</p>

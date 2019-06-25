@@ -158,7 +158,7 @@ button:disabled {
 }
 
 #menu-button img {
-    width: 100%;
+    width: 65%;
 }
 
 #cancel-reply {
@@ -166,8 +166,12 @@ button:disabled {
 }
 
 #close img,
-#cancel-reply img {
+#cancel-reply img, .small-img  {
     height: 1rem;
+}
+
+.dropdown .small-img  {
+    height: 1.5rem;
 }
 
 #cancel-reply img {
@@ -286,6 +290,9 @@ li.highlighted {
 .no-show {
     display: none
 }
+.show {
+    display: block
+}
 
 .wrap {
     word-wrap: break-word;
@@ -296,6 +303,7 @@ li.highlighted {
 }
 
 .dropdown {
+    margin-left: 15px;
     position: relative;
     display: inline-block;
 }
@@ -310,7 +318,7 @@ li.highlighted {
     z-index: 1;
 }
 
-.dropdown:hover .dropdown-content {
+.dropdown .show.dropdown-content {
     display: block;
 }
 
@@ -331,3 +339,18 @@ li.highlighted {
     cursor: pointer;
     font-weight: bold;
 }
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    padding: 12px 16px;
+    z-index: 1;
+  }

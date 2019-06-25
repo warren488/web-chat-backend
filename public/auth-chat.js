@@ -273,6 +273,11 @@ function cancelReply() {
     hID = null
 }
 
+$('.dropdown .small-img').click(() => {
+    document.querySelector('.dropdown-content').classList.toggle('show')
+    // document.querySelector('.dropdown-content').classList.remove('no-show')
+})
+
 function scrollBottom(force) {
     let messages = $("#messages")
     let newMessage = messages.children('li:last-child')
@@ -320,6 +325,14 @@ function notifyMe(data) {
 function getUsername() {
     return document.cookie.replace((/(?:(?:^|.*;\s*)username\s*\=\s*([^;]*).*$)|^.*$/), "$1")
 }
+  
+function logout(){
+    setCookie('token', '', -1000)
+    setCookie('username', '', -1000)
+    window.location = '/login'
+}
+
+
 $('document').ready(e => scrollBottom(true))
 
 function createElementFromHTML(htmlString) {

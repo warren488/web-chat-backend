@@ -16,8 +16,8 @@ $("#login").submit(e => {
         success: function (xhr) {
             var token = xhr.token
             var username = xhr.username
-            document.cookie = 'username=' + username
-            document.cookie = 'token=' + token
+            setCookie('username' , username, 1000000)
+            setCookie('token' , token, 1000000)
             window.location.href = '/home'
         },
         error: function (data) {
