@@ -67,7 +67,6 @@ socket.on('newMessage', data => {
     console.log(nodeHTML);
     $('#messages').append(nodeHTML)
     var friendship_id = window.location.pathname.split('/')[3]
-    console.log(data.Ids)
     socket.emit('gotMessage', { friendship_id ,token: getToken(), Ids: data.Ids}, () => console.log('message ticked'))
     scrollBottom()
 
@@ -147,8 +146,8 @@ $("#message-form").submit(e => {
     
         scrollBottom()
 
-
-        socket.emit('sendMessage', { hID, text: text, name: $.deparam(window.location.search).name }, (err, data) => {
+        var friendship_id = window.location.pathname.split('/')[3]
+        socket.emit('sendMessage', { friendship_id, hID, text: text, name: $.deparam(window.location.search).name }, (err, data) => {
             nodeHTML.id = data
             nodeHTML.classList.remove("pending")
             nodeHTML.classList.add("sent")
@@ -164,9 +163,10 @@ $("#message-form").submit(e => {
 
 // update typing info for every keydown
 $("#msg-txt").keydown(e => {
-    // if we're already recorded as "typing"
+        var friendship_id = window.location.pathname.split('/')[3]
+        // if we're already recorded as "typing"
     if (!typing.status) {
-        socket.emit('sendMessage', { from: getUsername(), type: 'typing', status: 'start' }, () => console.log('typing sent'))
+        socket.emit('sendMessage', { friendship_id, from: getUsername(), type: 'typing', status: 'start' }, () => console.log('typing sent'))
     }
     // set a timeout of 1 second every time we press a key
     typing.time = 1000
@@ -183,7 +183,7 @@ $("#msg-txt").keydown(e => {
                 typing.status = false;
                 clearInterval(typing.interval)
                 delete typing.interval
-                socket.emit('sendMessage', { type: 'typing', status: 'stop' }, () => console.log('typing sent'))
+                socket.emit('sendMessage', { friendship_id, type: 'typing', status: 'stop' }, () => console.log('typing sent'))
             }
         }, 100);
     }

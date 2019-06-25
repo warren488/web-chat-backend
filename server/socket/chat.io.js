@@ -2,7 +2,7 @@ let User = require('../models/User')
 let Message = require('../models/Message')
 const mongoose = require("mongoose")
 
-module.exports = async function ioconnection(io, friendship_id, activeUsers, status) {
+module.exports = async function ioconnection(io, activeUsers, status) {
     if(status.attached){
         return
     }
@@ -42,7 +42,7 @@ module.exports = async function ioconnection(io, friendship_id, activeUsers, sta
                     status: 'received'
                 }
             })
-            io.to(friendship_id).emit('received', [data.Ids[1]])
+            io.to(data.friendship_id).emit('received', [data.Ids[1]])
         })
 
 
@@ -50,7 +50,7 @@ module.exports = async function ioconnection(io, friendship_id, activeUsers, sta
             // if this is a socket message about the users is typing then
             // just handle it here
             if (messageData.type === 'typing') {
-                io.to(friendship_id).emit('newMessage', messageData)
+                io.to(messageData.friendship_id).emit('newMessage', messageData)
                 return
             }
             let user = await User.findById(activeUsers[socket.id])
@@ -70,13 +70,13 @@ module.exports = async function ioconnection(io, friendship_id, activeUsers, sta
                 let msgId = mongoose.Types.ObjectId()
                 // for now we'll use the globally unique identifier to pass back
                 // TODO: in very near future we ca pass back both if needed
-                let myMsgId = await user.addMessage(friendship_id, { msgId, ...message });
+                let myMsgId = await user.addMessage(messageData.friendship_id, { msgId, ...message });
 
                 // this will actually search by the friendship id
-                let { id } = await user.findFriend(friendship_id, '_id')
+                let { id } = await user.findFriend(messageData.friendship_id, '_id')
                 let friend = await User.findById(id)
-                let theirMsgId = await friend.addMessage(friendship_id, { msgId, ...message })
-                io.to(friendship_id).emit('newMessage', { Ids: [theirMsgId, myMsgId, msgId], ...message })
+                let theirMsgId = await friend.addMessage(messageData.friendship_id, { msgId, ...message })
+                io.to(messageData.friendship_id).emit('newMessage', { Ids: [theirMsgId, myMsgId, msgId], ...message })
                 return callback(null, myMsgId)
 
             } catch (error) {

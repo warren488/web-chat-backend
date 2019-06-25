@@ -84,7 +84,7 @@ app.get("/users/me/:friendship_id", HTMLauthenticate, async (req, res) => {
     // TODO: we attach the listeners here because we need reference to some important
     // variables but we only want this function run once for the entire time the server is up
     // so we hack it to only accept one time of listener for each
-    attachListeners(io, req.params.friendship_id, activeUsers, status);
+    attachListeners(io, activeUsers, status);
     let friends = req.user.friends.map(({ _id, username }) => {
       let returnVal = { _id, username };
       if (_id.toString() === req.params.friendship_id) {
