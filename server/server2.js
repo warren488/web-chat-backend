@@ -56,6 +56,7 @@ const server = http.createServer(app);
 const io = socketIO(server);
 let status = { attached: false };
 const activeUsers = {};
+attachListeners(io, activeUsers, status);
 
 app.use(express.static(publicPath));
 app.get("/login", (req, res) => {
@@ -72,7 +73,6 @@ app.get("/home", HTMLauthenticate, (req, res) => {
   res.render("home.hbs", {
     friends: friends
   });
-  // res.sendFile(path.join(__dirname + '/../views/home.hbs'));
 });
 app.get('/', (req, res) => {
     res.redirect('/home')
@@ -84,7 +84,6 @@ app.get("/users/me/:friendship_id", HTMLauthenticate, async (req, res) => {
     // TODO: we attach the listeners here because we need reference to some important
     // variables but we only want this function run once for the entire time the server is up
     // so we hack it to only accept one time of listener for each
-    attachListeners(io, activeUsers, status);
     let friends = req.user.friends.map(({ _id, username }) => {
       let returnVal = { _id, username };
       if (_id.toString() === req.params.friendship_id) {
