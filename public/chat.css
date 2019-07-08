@@ -65,7 +65,7 @@ button:disabled {
     border-radius: 5px;
     padding: 0 20px;
     margin: 20px;
-    width: 230px
+    width: 320px
 }
 
 .form-field {
@@ -166,11 +166,12 @@ button:disabled {
 }
 
 #close img,
-#cancel-reply img, .small-img  {
+#cancel-reply img,
+.small-img {
     height: 1rem;
 }
 
-.dropdown .small-img  {
+.dropdown .small-img {
     height: 1.5rem;
 }
 
@@ -185,12 +186,13 @@ button:disabled {
 }
 
 .message {
-    padding: 16px;
+    padding: 5px;
+    padding-left: 10px;
     background-color: #e6eaee;
-    border-radius: 20px;
+    border-radius: 9px;
     margin: 5px;
     max-width: 80%;
-    width: fit-content;
+    box-shadow: 3px 3px 3px lightgray;
 }
 
 .message:hover {
@@ -260,11 +262,12 @@ li[id=""].pending .message::after {
     background-color: rgb(202, 202, 202);
     display: inline-block;
     border: thin solid rgb(202, 202, 202);
-    border-radius: 20px;
-    padding: 10px;
+    border-radius: 9px;
+    padding: 5px;
     margin-left: 5%;
     margin-top: 5px;
     width: 95%;
+    box-shadow: 1px 1px 3px gray;
 }
 
 .chat__messages li {
@@ -290,6 +293,7 @@ li.highlighted {
 .no-show {
     display: none
 }
+
 .show {
     display: block
 }
@@ -343,14 +347,18 @@ li.highlighted {
 .dropdown {
     position: relative;
     display: inline-block;
-  }
-  
-  .dropdown-content {
+}
+
+.dropdown-content {
     display: none;
     position: absolute;
     background-color: #f9f9f9;
     min-width: 160px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
     padding: 12px 16px;
     z-index: 1;
-  }
+}
+
+.alert {
+    color: red;
+}

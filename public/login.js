@@ -1,4 +1,8 @@
 $("#login").submit(e => {
+    let feebackEl = document.querySelector('.feedback')
+    feebackEl.innerHTML = '';
+    feebackEl.classList.remove('alert')  
+
     var data = {}
     data.username = e.target.username.value
     data.password = e.target.password.value
@@ -22,9 +26,11 @@ $("#login").submit(e => {
         },
         error: function (data) {
             if(data.responseJSON.message){
-                alert(data.responseJSON.message)
+                feebackEl.innerHTML = data.responseJSON.message
+                feebackEl.classList.add('alert')
             }else {
-                alert('error login in')
+                feebackEl.innerHTML = 'error logging in';
+                feebackEl.classList.add('alert')
             }
         },
         json: true

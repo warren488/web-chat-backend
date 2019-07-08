@@ -12,6 +12,7 @@ const socketIO = require("socket.io");
 const apiRouter = require("./api");
 const Message = require('./models/Message')
 const attachListeners = require("./socket/chat.io");
+const attachGameListeners = require("./socket/game.io");
 const bodyParser = require("body-parser");
 const { HTMLauthenticate, authenticate, emojis } = require("./services");
 const cookieParser = require("cookie-parser");
@@ -58,6 +59,16 @@ let status = { attached: false };
 const activeUsers = {};
 attachListeners(io, activeUsers, status);
 
+/** GAME STUFF */
+const available = {
+  top: {free: true, socket: null},
+  bottom: {free: true, socket: null}
+}
+attachGameListeners(io, available);
+
+
+
+/** */
 app.use(express.static(publicPath));
 app.get("/login", (req, res) => {
   res.sendFile(path.join(__dirname + "/../views/login.html"));
