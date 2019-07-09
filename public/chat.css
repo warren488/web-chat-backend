@@ -234,21 +234,27 @@ button:disabled {
 }
 
 
-li.sent .message::after {
+li.sent .message p.wrap::after {
     content: '\2713';
     color: blue;
+    float: right;
+    margin: 0px 0px 0px 5px;
 }
 
-li.received .message::after {
+li.received .message p.wrap::after {
     content: '\2714';
     color: green;
+    float: right;
+    margin: 0px 0px 0px 5px;
 }
 
-li[id=""].pending .message::after {
+li[id=""].pending .message p.wrap::after {
     content: '\2755';
     color: #900;
     background: red;
     border-radius: 3px;
+    float: right;
+    margin: 0px 0px 0px 5px;
 }
 
 

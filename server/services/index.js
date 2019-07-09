@@ -1,12 +1,12 @@
 let User = require('../models/User')
-    // get our emojis to export through services
+// get our emojis to export through services
 const emojis = require('./emoji')
 
 async function createUser(req, res) {
 
     try {
         // await User.schema.methods.validateSchema(req.body)
-        let user = new User({...req.body, chats: [] })
+        let user = new User({ ...req.body, chats: [] })
 
         let token = await user.generateAuthToken()
         user = await user.save()
@@ -73,7 +73,9 @@ async function HTMLauthenticate(req, res, next) {
     let token = req.cookies.token;
     let user
     try {
-        user = await User.findByToken(token)
+        if (token) {
+            user = await User.findByToken(token)
+        }
         if (!user) {
             throw 'not fond'
         }
