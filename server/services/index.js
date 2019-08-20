@@ -37,6 +37,9 @@ async function login(req, res) {
 
     } catch (error) {
         console.log(error)
+        if(error.message === "incorrect credentials"){
+            return res.status(401).send(error)
+        }
         return res.status(500).send(error)
     }
 }
@@ -58,7 +61,7 @@ async function authenticate(req, res, next) {
     try {
         user = await User.findByToken(token)
         if (!user) {
-            throw 'not fond'
+            throw 'not found'
         }
     } catch (error) {
         return res.status(401).send({ message: "unauthorized" })
@@ -77,7 +80,7 @@ async function HTMLauthenticate(req, res, next) {
             user = await User.findByToken(token)
         }
         if (!user) {
-            throw 'not fond'
+            throw 'not found'
         }
     } catch (error) {
         console.log(error)
@@ -116,4 +119,10 @@ async function chatRedirect(req, res) {
 
 }
 
-module.exports = { chatRedirect, createUser, login, emojis, logout, authenticate, HTMLauthenticate, addFriend }
+async function getMessages(req, res) {
+    let currentChat = await req.user.getChat(req.params.friendship_id)
+    return res.status(200).send(currentChat)
+    
+}
+
+module.exports = { chatRedirect, getMessages, createUser, login, emojis, logout, authenticate, HTMLauthenticate, addFriend }

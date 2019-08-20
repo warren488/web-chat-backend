@@ -16,6 +16,7 @@ const attachGameListeners = require("./socket/game.io");
 const bodyParser = require("body-parser");
 const { HTMLauthenticate, authenticate, emojis } = require("./services");
 const cookieParser = require("cookie-parser");
+const cors = require("cors")
 var hbs = require("hbs");
 
 hbs.registerHelper("equal", 
@@ -69,6 +70,7 @@ attachGameListeners(io, available);
 
 
 /** */
+app.use(cors())
 app.use(express.static(publicPath));
 app.get("/login", (req, res) => {
   res.sendFile(path.join(__dirname + "/../views/login.html"));
@@ -140,6 +142,61 @@ app.get("/users/me/:friendship_id", HTMLauthenticate, async (req, res) => {
     console.log(error);
   }
 });
+
+/**         TEST         *//**         TEST         *//**         TEST         *//**         TEST         */
+app.get("/users/me2/:friendship_id", HTMLauthenticate, async (req, res) => {
+  try {
+    let curFriend;
+    // TODO: we attach the listeners here because we need reference to some important
+    // variables but we only want this function run once for the entire time the server is up
+    // so we hack it to only accept one time of listener for each
+    let friends = req.user.friends.map(({ _id, username }) => {
+      let returnVal = { _id, username };
+      if (_id.toString() === req.params.friendship_id) {
+        returnVal.active = true;
+        curFriend = username;
+      }
+      return returnVal;
+    });
+    /**
+     * The messages contained in the current chat between these 2 users
+     * @var {Array} currentChat 
+     * @memberof Server
+     */
+    let currentChat = await req.user.getChat(req.params.friendship_id)
+    res.render("async-chat.hbs", {
+      friends: friends,
+      messages: currentChat,
+      username: req.user.username,
+      friend: curFriend,
+      emojis
+    });
+    // TODO: this can possible become inefficient
+    await Promise.all(currentChat.filter(async message => {
+      if(message.from !== req.user.username){
+        // update this message's status
+        message.status = 'received';
+        return Promise.all([Message.findOneAndUpdate({
+          // update the status of the other message that corresponds to this 
+          // one
+          msgId: message.msgId, 
+          user_id: {
+            $ne: message.user_id
+          }
+        }, {$set: { status: 'received' }}).then(msg => {
+          io.to(req.params.friendship_id).emit('received', [msg._id])
+        }),
+        message.save()])
+      }
+      
+    }))
+  } catch (error) {
+    res.send("<h1>ERROR, WORKING TO FIX IT<h1>");
+    console.log(error);
+  }
+});
+/**         TEST         *//**         TEST         *//**         TEST         *//**         TEST         *//**         TEST         */
+
 
 app.use("/api", apiRouter);
 

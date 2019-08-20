@@ -48,7 +48,7 @@ socket.on("newMessage", data => {
     }
     // send desktop notification
     notifyMe({ from: data.from, message: data.text });
-    var template;
+    var template = messageTemplate;
     var templateData = {
         text: data.text,
         from: data.from === getUsername() ? "me" : data.from,
@@ -64,8 +64,6 @@ socket.on("newMessage", data => {
         ).toLocaleTimeString();
         templateData.quotedMessage = data.quoted.text;
         template = messageQuoteTemplate;
-    } else {
-        template = messageTemplate;
     }
     var html = Mustache.render(template, templateData);
     // we want it as a node so that we can simply append
