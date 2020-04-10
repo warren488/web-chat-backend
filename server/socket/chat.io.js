@@ -22,11 +22,6 @@ module.exports = async function ioconnection(io, activeUsers, status) {
         ) {
             try {
                 let user;
-                if (socket.id in activeUsers) {
-                    // this very much needs to ensure unused sokets are deleted
-                    // OR that the ids are never reused(idk but unlikely)
-                    delete activeUsers[socket.id];
-                }
                 user = await User.findByToken(token);
                 activeUsers[socket.id] = user._id.toString();
                 /** @todo I need to remove the socket from all other 'rooms' as well before i join this one */
@@ -55,6 +50,7 @@ module.exports = async function ioconnection(io, activeUsers, status) {
             messageData,
             callback
         ) {
+            console.log(messageData);
             // if this is a socket message about the users is typing then
             // just handle it here
             if (messageData.type === "typing") {
@@ -97,7 +93,8 @@ module.exports = async function ioconnection(io, activeUsers, status) {
                 );
                 io.to(messageData.friendship_id).emit("newMessage", {
                     Ids: [theirMsgId, myMsgId, msgId],
-                    ...message
+                    ...message,
+                    friendship_id: messageData.friendship_id
                 });
                 return callback(null, myMsgId);
             } catch (error) {
