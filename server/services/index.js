@@ -39,6 +39,8 @@ async function login(req, res) {
         console.log(error)
         if(error.message === "incorrect credentials"){
             return res.status(401).send(error)
+        }else if(error.message === "user not found"){
+            return res.status(404).send(error)
         }
         return res.status(500).send(error)
     }
@@ -111,6 +113,15 @@ async function addFriend(req, res) {
     }
 }
 
+async function getFriends(req, res) {
+    let myFriends = JSON.parse(JSON.stringify(req.user.friends));
+    for (const index in myFriends) {
+        let lastMessage = await req.user.getLastMessage(req.user.friends[index]._id)
+        myFriends[index].lastMessage = Array.from(lastMessage)
+    }
+    return res.status(200).send(myFriends)
+}
+
 // TODO: eventually remove after the frontend uses direct links
 async function chatRedirect(req, res) {
 
@@ -125,4 +136,9 @@ async function getMessages(req, res) {
     
 }
 
-module.exports = { chatRedirect, getMessages, createUser, login, emojis, logout, authenticate, HTMLauthenticate, addFriend }
+async function getLastMessage(req, res) {
+    let lastMessage = await req.user.getLastMessage(req.params.friendship_id)
+    return res.status(200).send(lastMessage)
+}
+
+module.exports = { getLastMessage, getFriends, chatRedirect, getMessages, createUser, login, emojis, logout, authenticate, HTMLauthenticate, addFriend }

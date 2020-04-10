@@ -17,7 +17,7 @@ socket.on("connect", () => {
     var friendship_id = window.location.pathname.split("/")[3];
     /**
      * @function checkin
-     * @todo add a kind of a queue to the DB (or from another service) so that we can get messages from that queue
+     * @todo add a kind of a queue to the DB (or from another service) so that we can get messages from that queue, for disconnects or so
      * @todo chat page specific logic for getting frienship ID should really use this to determine if to allow functionality on the page
      * @memberof AuthChat
      */
@@ -77,6 +77,7 @@ socket.on("newMessage", data => {
     );
     scrollBottom();
 });
+/** @fixme this needs to urgently update the messages data stored as that is what ultimately set the classes */
 socket.on("received", data => {
     data.forEach(Id => {
         let message = document.getElementById(Id);
@@ -184,7 +185,7 @@ $("#message-form").submit(e => {
 // update typing info for every keydown
 $("#msg-txt").keydown(e => {
     var friendship_id = window.location.pathname.split("/")[3];
-    // if we're already recorded as "typing"
+    // if we're not already recorded as "typing"
     if (!typing.status) {
         socket.emit(
             "sendMessage",
@@ -196,10 +197,10 @@ $("#msg-txt").keydown(e => {
             },
             () => console.log("typing sent")
         );
+        typing.status = true;
     }
     // set a timeout of 1 second every time we press a key
     typing.time = 1000;
-    typing.status = true;
     // if we dont have and interval currently "decrementing" the "counter(typing.time)"
     // then start this interval
     if (!typing.interval) {
@@ -212,6 +213,7 @@ $("#msg-txt").keydown(e => {
                 typing.status = false;
                 clearInterval(typing.interval);
                 delete typing.interval;
+                // let the others know that we've stopped typing
                 socket.emit(
                     "sendMessage",
                     { friendship_id, type: "typing", status: "stop" },
