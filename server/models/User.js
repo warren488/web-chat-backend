@@ -88,6 +88,26 @@ async function getChat(friendship_id, limit) {
     return chat
 }
 
+async function getLastMessage(friendship_id) {
+    let chat = await Message.find(
+      {
+        user_id: this._id,
+        friendship_id: friendship_id
+      },{
+          _id: 1,
+          msgId: 1,
+          text: 1,
+          from: 1,
+      },{
+          skip: 0,
+          limit: 1,
+          sort: {
+            createdAt: -1
+          }
+      });
+    return chat
+}
+
 /**
  * 
  * @param {String} id ID of the friend we want to add
@@ -229,6 +249,7 @@ userSchema.methods.addFriend = addFriend
 userSchema.methods.reAddFriend = reAddFriend
 userSchema.methods.findFriend = findFriend
 userSchema.methods.addMessage = addMessage
+userSchema.methods.getLastMessage = getLastMessage
 userSchema.methods.toJSON = toJSON
 userSchema.methods.removeToken = removeToken
 userSchema.statics.findByToken = findByToken
