@@ -50,7 +50,6 @@ module.exports = async function ioconnection(io, activeUsers, status) {
             messageData,
             callback
         ) {
-            console.log(messageData);
             // if this is a socket message about the users is typing then
             // just handle it here
             if (messageData.type === "typing") {
