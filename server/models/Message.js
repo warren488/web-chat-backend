@@ -12,7 +12,8 @@ let MessageSchema = new mongoose.Schema({
   },
   createdAt: {
     type: Number,
-    required: true
+    required: true,
+    index: true
   },
   from: {
     type: String,

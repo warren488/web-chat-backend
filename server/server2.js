@@ -30,14 +30,14 @@ hbs.registerHelper("equal",
  */
 function isEqual(lvalue, rvalue, type, options) {
   if (arguments.length < 3)
-    throw new Error("Handlebars Helper equal needs 2 parameters");
+  throw new Error("Handlebars Helper equal needs 2 parameters");
   if (type === "not") {
     /**essentially return true if they arent equal */
     if (lvalue == rvalue) {
-        return options.inverse(this);
-      } else {
-        return options.fn(this);
-      }
+      return options.inverse(this);
+    } else {
+      return options.fn(this);
+    }
   }
   if (lvalue != rvalue) {
     return options.inverse(this);
@@ -51,6 +51,7 @@ const app = express();
 app.set("view engine", "hbs");
 app.use(bodyParser.json());
 app.use(cookieParser());
+app.use(cors())
 
 const publicPath = path.join(__dirname, "../public");
 const port = process.env.PORT || 3000;
@@ -70,7 +71,6 @@ attachGameListeners(io, available);
 
 
 /** */
-app.use(cors())
 app.use(express.static(publicPath));
 app.get("/login", (req, res) => {
   res.sendFile(path.join(__dirname + "/../views/login.html"));

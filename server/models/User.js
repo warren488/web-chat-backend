@@ -18,6 +18,8 @@ let userSchema = new mongoose.Schema({
         trim: true,
         minlength: 1,
         unique: true,
+        index: true,
+        sparse: true,
         validate: {
             validator: validator.isEmail,
             message: '{VALUE} is not a valid email'
@@ -26,6 +28,7 @@ let userSchema = new mongoose.Schema({
     username: {
         type: String,
         unique: true,
+        index: true,
         required: true,
         minlength: 4
     },
@@ -43,6 +46,18 @@ let userSchema = new mongoose.Schema({
         type: String,
         required: true,
         minlength: 7
+    },
+    lastOnline: {
+        type: Number
+    },
+    profileImg: {
+        type: String
+    },
+    status: {
+        type: String
+    },
+    location: {
+        type: String
     },
     tokens: [{
         access: {
@@ -84,7 +99,23 @@ async function getChat(friendship_id, limit) {
       {
         user_id: this._id,
         friendship_id: friendship_id
-      });
+      },
+      {},
+      { limit, sort: {"createdAt": -1} });
+    return chat
+}
+
+async function getChatPage(friendship_id, limit, timestamp) {
+    let chat = await Message.find(
+      {
+        user_id: this._id,
+        friendship_id: friendship_id,
+        createdAt: {
+            $lte: timestamp
+        }
+      },
+      {},
+      { limit, sort: {"createdAt": -1} });
     return chat
 }
 
@@ -176,10 +207,14 @@ async function addMessage(friendship_id, message) {
 function toJSON() {
     user = this
     return {
-        id: user._id,
-        email: user.email,
-        username: user.username
-    }
+      id: user._id,
+      email: user.email,
+      username: user.username,
+      lastOnline: user.lastOnline,
+      profileImg: user.profileImg,
+      status: user.status,
+      location: user.location,
+    };
 }
 
 /**
@@ -224,6 +259,43 @@ async function findByCredentials(uniqueId, credentials) {
 }
 
 /**
+ * find a user by username
+ * @param {String} username name of the credential we want to identify the user by
+ * @example 
+ *  findByUsername('username')
+ * @memberof User
+ */
+async function findByUsername(username) {
+    let user = await this.findOne({
+        username
+    })
+    console.log(user, username)
+    if (!user) {
+        throw ({ message: 'user not found' })
+    }
+    return user
+}
+
+/**
+ * find a group of users by username
+ * @param {String} username name of the credential we want to identify the user by
+ * @example 
+ *  filterByUsername('username')
+ * @memberof User
+ */
+async function filterByUsername(username) {
+  let users = await User.find({
+    $text: {
+      $search: username,
+    },
+  });
+  if (!users) {
+    throw { message: 'user not found' };
+  }
+  return users;
+}
+
+/**
  * Remove a token for the specific user
  * @param {String} token the token we would like to remove
  * @memberof User
@@ -243,17 +315,50 @@ async function removeToken(token) {
     await user.save()
 }
 
+async function updateInfo(info) {
+  if ('email' in info && info.email === '') {
+    /**
+     * email is special because it must be unique, but it is not required so we have to make sure
+     * that if a user tries to delete it by sending an empty string we completely remove it if not
+     * we will have clashes with multiple emails being empty strings
+     */
+    this.email = undefined;
+    delete info.email;
+  }
+  for (const key in info) {
+    if (User.writableProperties.includes(key)) {
+      this[key] = info[key];
+    }
+  }
+  return this.save();
+}
+
+const writableProperties = [
+  'username',
+  'password',
+  'email',
+  'lastOnline',
+  'profileImg',
+  'status',
+  'location',
+];
+
 userSchema.methods.generateAuthToken = generateAuthToken
 userSchema.methods.getChat = getChat
 userSchema.methods.addFriend = addFriend
 userSchema.methods.reAddFriend = reAddFriend
 userSchema.methods.findFriend = findFriend
 userSchema.methods.addMessage = addMessage
+userSchema.methods.updateInfo = updateInfo
 userSchema.methods.getLastMessage = getLastMessage
 userSchema.methods.toJSON = toJSON
 userSchema.methods.removeToken = removeToken
+userSchema.methods.getChatPage = getChatPage
 userSchema.statics.findByToken = findByToken
 userSchema.statics.findByCredentials = findByCredentials
+userSchema.statics.findByUsername = findByUsername
+userSchema.statics.filterByUsername = filterByUsername
+userSchema.statics.writableProperties = writableProperties
 
 
 
@@ -274,8 +379,7 @@ function preSave(next) {
     } else {
         next()
     }
-})
+});
 
 let User = mongoose.model('User', userSchema)
-
 module.exports = User

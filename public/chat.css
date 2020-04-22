@@ -289,7 +289,6 @@ li[id=""].pending .message .message__body > p.wrap::after {
 li.highlighted {
     background-color: #337ba867;
     border-radius: 10px;
-    /* background-color: rgb(202, 202, 202, 0.5); */
 }
 
 #users .highlighted {
