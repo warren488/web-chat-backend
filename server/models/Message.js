@@ -39,6 +39,25 @@ let MessageSchema = new mongoose.Schema({
   }
 });
 
+async function markAsReceived(friendship_id, range) {
+  return this.updateMany(
+    {
+      friendship_id,
+      createdAt: {
+        $lte: range[0],
+        $gte: range[1],
+      },
+    },
+    {
+      $set: {
+        status: 'received',
+      },
+    }
+  );
+}
+
+MessageSchema.statics.markAsReceived = markAsReceived;
+
 let Message = mongoose.model("Message", MessageSchema);
 
 module.exports = Message;

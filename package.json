@@ -23,6 +23,7 @@
     "cors": "^2.8.5",
     "dotenv": "^6.2.0",
     "express": "^4.14.0",
+    "firebase": "^7.14.2",
     "hbs": "^4.0.1",
     "jsonwebtoken": "^8.4.0",
     "mongoose": "^5.4.3",

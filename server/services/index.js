@@ -1,7 +1,27 @@
 let User = require('../models/User');
+let Message = require('../models/Message');
 // get our emojis to export through services
 const emojis = require('./emoji');
 const bcrypt = require('bcryptjs');
+
+
+// const firebase = require('firebase/app');
+
+// // These imports load individual services into the firebase namespace.
+// require('firebase/storage');
+// var firebaseConfig = {
+//   apiKey: 'AIzaSyBD4TjGeZXKw7fWYR8X0UGfHAIvQqzUmF0',
+//   authDomain: 'myapp-4f894.firebaseapp.com',
+//   databaseURL: 'https://myapp-4f894.firebaseio.com',
+//   projectId: 'myapp-4f894',
+//   storageBucket: 'myapp-4f894.appspot.com',
+//   messagingSenderId: '410181839308',
+//   appId: '1:410181839308:web:7249de84cc8fdd3cc5d569',
+// };
+// // Initialize Firebase
+// firebase.initializeApp(firebaseConfig);
+
+/* ====================================================================== */
 
 async function createUser(req, res) {
   try {
@@ -49,7 +69,7 @@ async function getUsers(req, res) {
   //   { limit: 100 }
   // );
 
-  const users = await User.filterByUsername(req.query.username)
+  const users = await User.filterByUsername(req.query.username);
   return res.status(200).send(users);
 }
 
@@ -134,8 +154,9 @@ async function addFriend(req, res) {
       throw { message: 'user not found' };
     }
 
-    let newFriendship = await req.user.addFriend(friend.id, friend.username);
-    await friend.reAddFriend(req.user.id, req.user.username, newFriendship._id);
+    let newFriendship = await req.user.addFriend(friend);
+    /** mongo does some fancy magic with their object that causes them not to quite behave regularly */
+    await friend.reAddFriend({ ...JSON.parse(JSON.stringify(req.user)), friendship_id: newFriendship._id});
     return res.status(200).send({ message: 'friend successfully added' });
   } catch (err) {
     console.log(err);
@@ -145,6 +166,7 @@ async function addFriend(req, res) {
 
 async function getFriends(req, res) {
   let myFriends = JSON.parse(JSON.stringify(req.user.friends));
+  console.log(req.user.friends)
   for (const index in myFriends) {
     let lastMessage = await req.user.getLastMessage(
       req.user.friends[index]._id
@@ -181,11 +203,16 @@ async function chatRedirect(req, res) {
 }
 
 async function getMessages(req, res) {
-  let currentChat = await req.user.getChat(
-    req.params.friendship_id,
-    parseInt(req.query.limit)
-  );
-  return res.status(200).send(currentChat);
+  try {
+    let {
+      params: { friendship_id },
+      query: { limit },
+    } = req;
+    let currentChat = await req.user.getChat(friendship_id, parseInt(limit));
+    res.status(200).send(currentChat);
+  } catch (e) {
+    res.status(500).send({ message: 'error retrieving messages' });
+  }
 }
 
 async function getChatPage(req, res) {
@@ -208,6 +235,54 @@ async function getLastMessage(req, res) {
   return res.status(200).send(lastMessage);
 }
 
+/**
+ * ============================================================================
+ * FUNCTIONS THAT DEAL WITH BOTH THE SOCKET AND THE HTTP API
+ */
+
+/**
+ * for a user mark all messages between 2 timestamps as read
+ */
+function sweep(io) {
+  return async (req, res) => {
+    /**
+     * can be expensive if we end up getting a lot of messages, especially those that have already
+     * been marked as read
+     */
+
+    console.log('sweeeeep', req.body);
+
+    try {
+      let { friendship_id, range } = req.body;
+      let info = await Message.markAsReceived(friendship_id, range);
+      console.log(info);
+
+      res.status(200).send({ message: 'success' });
+      io.to(friendship_id).emit('sweep', { range, friendship_id });
+      return;
+    } catch (e) {
+      res.status(500).send({ message: 'error retrieving messages' });
+    }
+  };
+}
+
+async function imageUpload(req, res) {
+  // try {
+  //   // Create a root reference
+  //   var storageRef = firebase.storage().ref();
+  
+  //   // Create a reference to 'images/mountains.jpg'
+  //   var ref = storageRef.child('profileImages/mountains.jpg');
+  //   await ref.putString(req.body.imageData, 'data_url').then(function (snapshot) {
+  //     console.log('Uploaded a base64 string!');
+  //     res.status(200).send(true)
+  //   });
+    
+  // } catch (error) {
+  //   console.log(error);
+  // }
+}
+
 module.exports = {
   getChatPage,
   getLastMessage,
@@ -216,7 +291,9 @@ module.exports = {
   getMessages,
   createUser,
   login,
+  imageUpload,
   getMe,
+  sweep,
   getUsers,
   emojis,
   logout,

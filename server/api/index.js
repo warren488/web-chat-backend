@@ -1,5 +1,5 @@
 let router = require("express").Router()
-let { getUser, getUsers, getMe, login, updateInfo, createUser, authenticate, logout, addFriend, getFriends, chatRedirect, getMessages,getChatPage, getLastMessage} = require('../services')
+let { getUser, getUsers, getMe, login, updateInfo, imageUpload, createUser, authenticate, logout, addFriend, getFriends, chatRedirect, getMessages,getChatPage, getLastMessage} = require('../services')
 
 router.post('/login', login)
 router.post('/signup', createUser)
@@ -14,8 +14,9 @@ router.get('/users/me/:friendship_id/messages', authenticate, getMessages)
 router.get('/users/me/:friendship_id/messagespage', authenticate, getChatPage)
 router.get('/users/me/:friendship_id/lastmessage', authenticate, getLastMessage)
 
-// redirect routes
-router.post('/users/me/chat', authenticate, chatRedirect)
+// file handling routes
+router.post('/image', authenticate, imageUpload)
+
 module.exports = router
 
 // testing routes
