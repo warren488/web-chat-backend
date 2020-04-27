@@ -335,20 +335,22 @@ async function removeToken(token) {
 }
 
 async function updateInfo(info) {
-    if ('email' in info && info.email === '') {
-      /**
-       * email is special because it must be unique, but it is not required so we have to make sure
-       * that if a user tries to delete it by sending an empty string we completely remove it if not
-       * we will have clashes with multiple emails being empty strings
-       */
-      this.email = undefined;
-      delete info.email;
+  if ('email' in info && info.email === '') {
+    /**
+     * email is special because it must be unique, but it is not required so we have to make sure
+     * that if a user tries to delete it by sending an empty string we completely remove it if not
+     * we will have clashes with multiple emails being empty strings
+     */
+    this.email = undefined;
+    delete info.email;
+  }
+  for (const key in info) {
+    if (User.writableProperties.includes(key)) {
+      this[key] = info[key];
     }
-    for (const key in info) {
-      if (User.writableProperties.includes(key)) {
-        this[key] = info[key];
-      }
-    }
+  }
+  /** if we have friends then update their info for us */
+  if (this.friends.length > 0) {
     let queryArray = [];
     let updateObject = {};
     for (const friend of this.friends) {
@@ -378,7 +380,8 @@ async function updateInfo(info) {
         }
       )
     );
-    return this.save();
+  }
+  return this.save();
 }
 
 const writableProperties = [
