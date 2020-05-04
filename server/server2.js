@@ -14,14 +14,15 @@ const attachListeners = require("./socket/chat.io");
 const attachGameListeners = require("./socket/game.io");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
-const cors = require("cors")
+const cors = require("cors");
+const morgan = require("morgan");
 require("./db");
 const app = express();
 
-app.set("view engine", "hbs");
 app.use(bodyParser.json({limit: '10mb', extended: true}));
 app.use(cookieParser());
-app.use(cors())
+app.use(cors());
+app.use(morgan('combined'));
 
 const port = process.env.PORT || 3000;
 const server = http.createServer(app);

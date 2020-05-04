@@ -302,11 +302,14 @@ async function findByUsername(username) {
  *  filterByUsername('username')
  * @memberof User
  */
-async function filterByUsername(username) {
+async function filterByUsername(userId, username) {
   let users = await User.find({
     $text: {
       $search: username,
     },
+    _id: {
+        $ne: userId
+    }
   });
   if (!users) {
     throw { message: 'user not found' };

@@ -23,8 +23,10 @@ module.exports = async function ioconnection(io, activeUsers, status) {
       try {
         let user;
         user = await User.findByToken(token);
-        activeUsers[socket.id] = user._id.toString();
-        /** @todo I need to remove the socket from all other 'rooms' as well before i join this one */
+        activeUsers[socket.id] = {
+          userId: user._id.toString(),
+          connected: true,
+        };
         socket.join(friendship_id);
       } catch (error) {
         console.log(error);
@@ -33,7 +35,29 @@ module.exports = async function ioconnection(io, activeUsers, status) {
       return callback ? callback(null) : null;
     });
 
+    socket.on('masCheckin', async function masCheckin(
+      { token, data: Ids },
+      callback
+    ) {
+      try {
+        let user;
+        user = await User.findByToken(token);
+        activeUsers[socket.id] = {
+          userId: user._id.toString(),
+          connected: true,
+        };
+        for (const id of Ids) {
+          socket.join(id);
+        }
+      } catch (error) {
+        console.log(error);
+        callback(error, null);
+      }
+      return callback ? callback(null) : null;
+    });
+
     socket.on('gotMessage', async function gotMessage(data, cb) {
+      console.log('got message');
       // do an update many and set both statuses (we will get the message(linking) Id)
       message = await Message.updateMany(
         { msgId: data.Ids[2] },
@@ -49,19 +73,27 @@ module.exports = async function ioconnection(io, activeUsers, status) {
       });
     });
 
-    socket.on('sendMessage', async function sendMessage(messageData, callback) {
+    socket.on('sendMessage', async function sendMessage(
+      { token, data: messageData },
+      callback
+    ) {
       // if this is a socket message about the users is typing then
       // just handle it here
       if (messageData.type === 'typing') {
-        io.to(messageData.friendship_id).emit('newMessage', messageData);
+        io.to(messageData.friendship_id).emit('newMessage', {
+          token,
+          data: messageData,
+        });
         return;
       }
-      let user = await User.findById(activeUsers[socket.id]);
+      let user = await User.findByToken(token);
       try {
         let message = {
           createdAt: new Date().getTime(),
           text: messageData.text,
           from: user.username,
+          /** @todo make this change in the schema and start using this instead of username */
+          fromId: user._id
         };
         if (messageData.hID) {
           let quoted = await Message.findById(messageData.hID);
@@ -77,6 +109,10 @@ module.exports = async function ioconnection(io, activeUsers, status) {
           ...message,
         });
 
+        /**
+         * @todo search for a user that has a friendship with this friendship id
+         * but is not the current user, this will replace an extra query
+         */
         // this will actually search by the friendship id
         let { id } = await user.findFriend(messageData.friendship_id, '_id');
         let friend = await User.findById(id);
@@ -85,9 +121,12 @@ module.exports = async function ioconnection(io, activeUsers, status) {
           ...message,
         });
         io.to(messageData.friendship_id).emit('newMessage', {
-          Ids: [theirMsgId, myMsgId, msgId],
-          ...message,
-          friendship_id: messageData.friendship_id,
+          token,
+          data: {
+            Ids: [theirMsgId, myMsgId, msgId],
+            ...message,
+            friendship_id: messageData.friendship_id,
+          },
         });
         return callback(null, myMsgId);
       } catch (error) {
@@ -96,8 +135,13 @@ module.exports = async function ioconnection(io, activeUsers, status) {
       }
     });
 
-    socket.on('disconnect', (args) => {
+    socket.on('disconnect', (...args) => {
+      console.log('disconnect', args);
       delete activeUsers[socket.id];
+    });
+
+    socket.on('reconnect', (...args) => {
+      console.log('reconnect', args);
     });
   });
   status.attached = true;

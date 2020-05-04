@@ -61,15 +61,7 @@ async function updateInfo(req, res) {
 }
 
 async function getUsers(req, res) {
-  // const users = await User.find(
-  //   {
-  //     ...req.query,
-  //   },
-  //   {},
-  //   { limit: 100 }
-  // );
-
-  const users = await User.filterByUsername(req.query.username);
+  const users = await User.filterByUsername(req.user._id, req.query.username);
   return res.status(200).send(users);
 }
 
@@ -166,7 +158,6 @@ async function addFriend(req, res) {
 
 async function getFriends(req, res) {
   let myFriends = JSON.parse(JSON.stringify(req.user.friends));
-  console.log(req.user.friends)
   for (const index in myFriends) {
     let lastMessage = await req.user.getLastMessage(
       req.user.friends[index]._id
@@ -250,15 +241,11 @@ function sweep(io) {
      * been marked as read
      */
 
-    console.log('sweeeeep', req.body);
-
     try {
       let { friendship_id, range } = req.body;
-      let info = await Message.markAsReceived(friendship_id, range);
-      console.log(info);
-
+      let info = await Message.markAsReceived(friendship_id, range, req.user.username);
       res.status(200).send({ message: 'success' });
-      io.to(friendship_id).emit('sweep', { range, friendship_id });
+      io.to(friendship_id).emit('sweep', { range, friendship_id, username: req.user.username });
       return;
     } catch (e) {
       res.status(500).send({ message: 'error retrieving messages' });
@@ -291,6 +278,7 @@ module.exports = {
   getMessages,
   createUser,
   login,
+  logout,
   imageUpload,
   getMe,
   sweep,
