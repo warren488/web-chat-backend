@@ -140,6 +140,7 @@ async function getLastMessage(friendship_id) {
       msgId: 1,
       text: 1,
       from: 1,
+      fromId: 1,
     },
     {
       skip: 0,

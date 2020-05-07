@@ -245,7 +245,7 @@ function sweep(io) {
       let { friendship_id, range } = req.body;
       let info = await Message.markAsReceived(friendship_id, range, req.user.username);
       res.status(200).send({ message: 'success' });
-      io.to(friendship_id).emit('sweep', { range, friendship_id, username: req.user.username });
+      io.to(friendship_id).emit('sweep', { range, friendship_id, fromId: req.user._id });
       return;
     } catch (e) {
       res.status(500).send({ message: 'error retrieving messages' });
