@@ -111,7 +111,7 @@ async function authenticate(req, res, next) {
     }
   } catch (error) {
     console.log(error);
-    return res.status(401).send({ message: 'unauthorized' });
+    return res.status(401).send({ message: 'request authentication failed' });
   }
   req.user = user;
   req.token = token;

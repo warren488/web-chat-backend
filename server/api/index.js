@@ -2,7 +2,7 @@ let router = require("express").Router()
 let { getUser, getUsers, getMe, login, updateInfo, imageUpload, createUser, authenticate, logout, addFriend, getFriends, chatRedirect, getMessages,getChatPage, getLastMessage} = require('../services')
 
 router.post('/login', login)
-router.post('/logout', logout)
+router.post('/logout', authenticate, logout)
 router.post('/signup', createUser)
 router.get('/users', authenticate, getUsers)
 router.get('/users/me', authenticate, getMe)
