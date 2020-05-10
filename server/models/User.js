@@ -160,8 +160,11 @@ async function getLastMessage(friendship_id) {
  * @memberof User
  */
 async function addFriend({ id, username, imgUrl }) {
-  console.log({ id, username, imgUrl });
-  let friend = { _id: new mongoose.Types.ObjectId(), id, username, imgUrl };
+  let friend = this.friends.find(friend => friend.username === username);
+  if (friend){
+    return friend;
+  }
+  friend = { _id: new mongoose.Types.ObjectId(), id, username, imgUrl };
   this.friends = this.friends.concat([friend]);
   await this.save();
   return friend;
@@ -176,8 +179,11 @@ async function addFriend({ id, username, imgUrl }) {
  * @memberof User
  */
 async function reAddFriend({ id, username, friendship_id, imgUrl }) {
-  console.log({ id, username, friendship_id, imgUrl });
-  let friend = { _id: friendship_id, id: id, username, imgUrl };
+  let friend = this.friends.find(friend => friend.username === username);
+  if (friend){
+    return friend;
+  }
+  friend = { _id: friendship_id, id: id, username, imgUrl };
   this.friends = this.friends.concat([friend]);
   await this.save();
   return friend;
