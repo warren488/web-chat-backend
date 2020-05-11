@@ -8,7 +8,15 @@ let MessageSchema = new mongoose.Schema({
   },
   text: {
     type: String,
-    required: true,
+  },
+  type: {
+    type: String,
+  },
+  media: {
+    type: String,
+  },
+  url: {
+    type: String,
   },
   createdAt: {
     type: Number,

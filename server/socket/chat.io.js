@@ -95,6 +95,11 @@ module.exports = async function ioconnection(io, activeUsers, status) {
           /** @todo make this change in the schema and start using this instead of username */
           fromId: user._id
         };
+        if(messageData.type === "media"){
+          message.url = messageData.url;
+          message.type = messageData.type;
+          message.media = messageData.media;
+        }
         if (messageData.hID) {
           let quoted = await Message.findById(messageData.hID);
           if (quoted) {
