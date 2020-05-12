@@ -364,14 +364,8 @@ async function updateInfo(info) {
     let queryArray = [];
     let updateObject = {};
     for (const friend of this.friends) {
-      console.log({ _id: friend.id });
       queryArray.push({
         _id: friend.id,
-        friends: {
-          $elemMatch: {
-            id: this._id,
-          },
-        },
       });
     }
     if (info.username) {
@@ -384,6 +378,11 @@ async function updateInfo(info) {
       await User.updateMany(
         {
           $or: queryArray,
+          'friends': {
+            $elemMatch: {
+              id: this._id,
+            },
+          }
         },
         {
           $set: updateObject,
