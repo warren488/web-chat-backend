@@ -93,9 +93,9 @@ module.exports = async function ioconnection(io, activeUsers, status) {
           text: messageData.text,
           from: user.username,
           /** @todo make this change in the schema and start using this instead of username */
-          fromId: user._id
+          fromId: user._id,
         };
-        if(messageData.type === "media"){
+        if (messageData.type === 'media') {
           message.url = messageData.url;
           message.type = messageData.type;
           message.media = messageData.media;
@@ -133,6 +133,8 @@ module.exports = async function ioconnection(io, activeUsers, status) {
             friendship_id: messageData.friendship_id,
           },
         });
+        /** @todo do i really need to wait on this to finish? */
+        await sendPushMessage(user, messageData);
         return callback(null, myMsgId);
       } catch (error) {
         console.log(error);

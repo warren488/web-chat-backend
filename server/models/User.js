@@ -25,6 +25,14 @@ let userSchema = new mongoose.Schema({
       message: '{VALUE} is not a valid email',
     },
   },
+  pushKey: {
+    type: String,
+    unique: true,
+    sparse: true,
+  },
+  pushEnabled: {
+    type: Boolean,
+  },
   username: {
     type: String,
     unique: true,
@@ -160,8 +168,8 @@ async function getLastMessage(friendship_id) {
  * @memberof User
  */
 async function addFriend({ id, username, imgUrl }) {
-  let friend = this.friends.find(friend => friend.username === username);
-  if (friend){
+  let friend = this.friends.find((friend) => friend.username === username);
+  if (friend) {
     return friend;
   }
   friend = { _id: new mongoose.Types.ObjectId(), id, username, imgUrl };
@@ -179,8 +187,8 @@ async function addFriend({ id, username, imgUrl }) {
  * @memberof User
  */
 async function reAddFriend({ id, username, friendship_id, imgUrl }) {
-  let friend = this.friends.find(friend => friend.username === username);
-  if (friend){
+  let friend = this.friends.find((friend) => friend.username === username);
+  if (friend) {
     return friend;
   }
   friend = { _id: friendship_id, id: id, username, imgUrl };
@@ -205,6 +213,17 @@ async function findFriend(val, propertyname) {
     return false;
   });
   return friend;
+}
+
+async function subscribeToNotifs(key) {
+  this.pushKey = key;
+  this.pushEnabled = true;
+  return this.save();
+}
+
+async function disablePush() {
+  this.pushEnabled = false;
+  return this.save();
 }
 
 /**
@@ -315,8 +334,8 @@ async function filterByUsername(userId, username) {
       $search: username,
     },
     _id: {
-        $ne: userId
-    }
+      $ne: userId,
+    },
   });
   if (!users) {
     throw { message: 'user not found' };
@@ -378,11 +397,11 @@ async function updateInfo(info) {
       await User.updateMany(
         {
           $or: queryArray,
-          'friends': {
+          friends: {
             $elemMatch: {
               id: this._id,
             },
-          }
+          },
         },
         {
           $set: updateObject,
@@ -410,6 +429,8 @@ userSchema.methods.reAddFriend = reAddFriend;
 userSchema.methods.findFriend = findFriend;
 userSchema.methods.addMessage = addMessage;
 userSchema.methods.updateInfo = updateInfo;
+userSchema.methods.disablePush = disablePush;
+userSchema.methods.subscribeToNotifs = subscribeToNotifs;
 userSchema.methods.getLastMessage = getLastMessage;
 userSchema.methods.toJSON = toJSON;
 userSchema.methods.removeToken = removeToken;

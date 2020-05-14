@@ -4,7 +4,6 @@ let Message = require('../models/Message');
 const emojis = require('./emoji');
 const bcrypt = require('bcryptjs');
 
-
 // const firebase = require('firebase/app');
 
 // // These imports load individual services into the firebase namespace.
@@ -63,6 +62,18 @@ async function updateInfo(req, res) {
 async function getUsers(req, res) {
   const users = await User.filterByUsername(req.user._id, req.query.username);
   return res.status(200).send(users);
+}
+
+async function subScribeToPush(req, res) {
+  console.log(req.body)
+  await req.user.subscribeToNotifs(JSON.stringify(req.body));
+  return res.status(200).send({ message: 'successfully signed up to push' });
+}
+
+async function disablePush(req, res){
+  await req.user.disablePush()
+  return res.status(200).send({ message: 'push successfully disabled' });
+
 }
 
 async function login(req, res) {
@@ -148,7 +159,10 @@ async function addFriend(req, res) {
 
     let newFriendship = await req.user.addFriend(friend);
     /** mongo does some fancy magic with their object that causes them not to quite behave regularly */
-    await friend.reAddFriend({ ...JSON.parse(JSON.stringify(req.user)), friendship_id: newFriendship._id});
+    await friend.reAddFriend({
+      ...JSON.parse(JSON.stringify(req.user)),
+      friendship_id: newFriendship._id,
+    });
     return res.status(200).send({ message: 'friend successfully added' });
   } catch (err) {
     console.log(err);
@@ -243,9 +257,17 @@ function sweep(io) {
 
     try {
       let { friendship_id, range } = req.body;
-      let info = await Message.markAsReceived(friendship_id, range, req.user.username);
+      let info = await Message.markAsReceived(
+        friendship_id,
+        range,
+        req.user.username
+      );
       res.status(200).send({ message: 'success' });
-      io.to(friendship_id).emit('sweep', { range, friendship_id, fromId: req.user._id });
+      io.to(friendship_id).emit('sweep', {
+        range,
+        friendship_id,
+        fromId: req.user._id,
+      });
       return;
     } catch (e) {
       res.status(500).send({ message: 'error retrieving messages' });
@@ -257,14 +279,12 @@ async function imageUpload(req, res) {
   // try {
   //   // Create a root reference
   //   var storageRef = firebase.storage().ref();
-  
   //   // Create a reference to 'images/mountains.jpg'
   //   var ref = storageRef.child('profileImages/mountains.jpg');
   //   await ref.putString(req.body.imageData, 'data_url').then(function (snapshot) {
   //     console.log('Uploaded a base64 string!');
   //     res.status(200).send(true)
   //   });
-    
   // } catch (error) {
   //   console.log(error);
   // }
@@ -278,12 +298,14 @@ module.exports = {
   getMessages,
   createUser,
   login,
+  subScribeToPush,
   logout,
   imageUpload,
   getMe,
   sweep,
   getUsers,
   emojis,
+  disablePush,
   logout,
   updateInfo,
   authenticate,
