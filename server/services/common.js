@@ -22,6 +22,7 @@ async function sendPushMessage(user, { friendship_id, text, from }) {
     const payload = JSON.stringify({
       title: `${user.username}`,
       text: text,
+      from
     });
     console.log(receiver);
     if (receiver.pushKey) {
