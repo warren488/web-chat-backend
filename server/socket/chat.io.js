@@ -135,7 +135,7 @@ module.exports = async function ioconnection(io, activeUsers, status) {
           },
         });
         /** @todo do i really need to wait on this to finish? */
-        await sendPushMessage(user, messageData);
+        await sendPushMessage(user, { from: user.username, ...messageData });
         return callback(null, myMsgId);
       } catch (error) {
         console.log(error);
