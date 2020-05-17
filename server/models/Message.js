@@ -15,6 +15,11 @@ let MessageSchema = new mongoose.Schema({
   media: {
     type: String,
   },
+  meta: {
+    height: { type: Number },
+    width: { type: Number },
+    length: { type: Number },
+  },
   url: {
     type: String,
   },
