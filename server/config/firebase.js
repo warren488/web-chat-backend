@@ -8,5 +8,5 @@ module.exports = {
   auth_uri: process.env.firebase_auth_uri,
   token_uri: process.env.firebase_token_uri,
   auth_provider_x509_cert_url: process.env.firebase_auth_provider_x509_cert_url,
-  client_x509_cert_url: process.env.firebase_client_x509_cert_url,
+  client_x509_cert_url: process.env.firebase_client_x509_cert_url
 };
