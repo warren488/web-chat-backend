@@ -3,31 +3,21 @@ let Message = require('../models/Message');
 // get our emojis to export through services
 const emojis = require('./emoji');
 const bcrypt = require('bcryptjs');
+const auth = require('./auth');
 
-// const firebase = require('firebase/app');
-
-// // These imports load individual services into the firebase namespace.
-// require('firebase/storage');
-// var firebaseConfig = {
-//   apiKey: 'AIzaSyBD4TjGeZXKw7fWYR8X0UGfHAIvQqzUmF0',
-//   authDomain: 'myapp-4f894.firebaseapp.com',
-//   databaseURL: 'https://myapp-4f894.firebaseio.com',
-//   projectId: 'myapp-4f894',
-//   storageBucket: 'myapp-4f894.appspot.com',
-//   messagingSenderId: '410181839308',
-//   appId: '1:410181839308:web:7249de84cc8fdd3cc5d569',
-// };
-// // Initialize Firebase
-// firebase.initializeApp(firebaseConfig);
-
-/* ====================================================================== */
+async function revokeAllTokens(req, res) {
+  await req.user.revokeAllTokens();
+  res.status(200).send({ message: 'success' });
+}
 
 async function createUser(req, res) {
   try {
     // await User.schema.methods.validateSchema(req.body)
     let user = new User({ ...req.body, chats: [] });
 
-    let token = await user.generateAuthToken();
+    let token = await auth.createCustomToken(user.id);
+    console.log(token);
+    await user.attachToken(token);
     user = await user.save();
     return res.status(200).send({ user, token });
   } catch (error) {
@@ -65,15 +55,14 @@ async function getUsers(req, res) {
 }
 
 async function subScribeToPush(req, res) {
-  console.log(req.body)
+  console.log(req.body);
   await req.user.subscribeToNotifs(JSON.stringify(req.body));
   return res.status(200).send({ message: 'successfully signed up to push' });
 }
 
-async function disablePush(req, res){
-  await req.user.disablePush()
+async function disablePush(req, res) {
+  await req.user.disablePush();
   return res.status(200).send({ message: 'push successfully disabled' });
-
 }
 
 async function login(req, res) {
@@ -86,7 +75,9 @@ async function login(req, res) {
     } else {
       user = await User.findByCredentials('username', req.body);
 
-      token = await user.generateAuthToken();
+      // token = await user.generateAuthToken();
+      token = await auth.createCustomToken(user.id);
+      user.attachToken(token);
     }
 
     return res.status(200).send({ token, username: user.username });
@@ -299,6 +290,7 @@ module.exports = {
   createUser,
   login,
   subScribeToPush,
+  revokeAllTokens,
   logout,
   imageUpload,
   getMe,

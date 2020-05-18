@@ -100,6 +100,7 @@ module.exports = async function ioconnection(io, activeUsers, status) {
           message.url = messageData.url;
           message.type = messageData.type;
           message.media = messageData.media;
+          message.meta = messageData.meta;
         }
         if (messageData.hID) {
           let quoted = await Message.findById(messageData.hID);

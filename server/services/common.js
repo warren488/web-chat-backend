@@ -24,7 +24,6 @@ async function sendPushMessage(user, { friendship_id, text, from }) {
       text: text,
       from
     });
-    console.log(receiver);
     if (receiver.pushKey) {
       webpush
         .sendNotification(JSON.parse(receiver.pushKey), payload)

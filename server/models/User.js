@@ -103,6 +103,22 @@ async function generateAuthToken() {
   return token;
 }
 
+async function attachToken(token){
+  this.tokens = this.tokens.concat([
+    {
+      access: 'auth',
+      token,
+    },
+  ]);
+  console.log(this)
+  await this.save();
+}
+
+async function revokeAllTokens(){
+  this.tokens = [];
+  await this.save()
+}
+
 /**
  * get a chat between this user and another using the frienship id
  * @param {String} friendship_id the Id of the friendship for the chat we want to get
@@ -236,6 +252,7 @@ async function disablePush() {
 async function addMessage(friendship_id, message) {
   // TODO: maybe we only need the status for our message as the user wont see status for messages
   // we sent, in which case the status would be set outside
+  console.log(message)
   const newMessage = new Message({
     status: 'sent',
     user_id: this._id,
@@ -270,9 +287,9 @@ function toJSON() {
  */
 async function findByToken(token) {
   let User = this;
-  let decoded = jwt.verify(token, SALT);
+  // let decoded = jwt.verify(token, SALT);
   let user = await User.findOne({
-    id: decoded.id,
+    // id: decoded.id,
     'tokens.token': token,
     'tokens.access': 'auth',
   });
@@ -423,6 +440,8 @@ const writableProperties = [
 ];
 
 userSchema.methods.generateAuthToken = generateAuthToken;
+userSchema.methods.revokeAllTokens = revokeAllTokens;
+userSchema.methods.attachToken = attachToken;
 userSchema.methods.getChat = getChat;
 userSchema.methods.addFriend = addFriend;
 userSchema.methods.reAddFriend = reAddFriend;
