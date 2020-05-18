@@ -18,6 +18,7 @@ let credTest = `{
 
 let creds = JSON.parse(credTest);
 creds.private_key = process.env.firebase_private_key.replace(/\\n/g, '\n')
+console.log(creds)
 
 admin.initializeApp({
   credential: admin.credential.cert(creds),
