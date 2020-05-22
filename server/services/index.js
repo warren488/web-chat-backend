@@ -14,10 +14,10 @@ async function createUser(req, res) {
   try {
     // await User.schema.methods.validateSchema(req.body)
     let user = new User({ ...req.body, chats: [] });
-
-    let token = await auth.createCustomToken(user.id);
-    console.log(token);
-    await user.attachToken(token);
+    
+    let token = await user.generateAuthToken();
+    // let token = await auth.createCustomToken(user.id);
+    // await user.attachToken(token);
     user = await user.save();
     return res.status(200).send({ user, token });
   } catch (error) {
@@ -75,9 +75,9 @@ async function login(req, res) {
     } else {
       user = await User.findByCredentials('username', req.body);
 
-      // token = await user.generateAuthToken();
-      token = await auth.createCustomToken(user.id);
-      user.attachToken(token);
+      token = await user.generateAuthToken();
+      // token = await auth.createCustomToken(user.id);
+      // user.attachToken(token);
     }
 
     return res.status(200).send({ token, username: user.username });

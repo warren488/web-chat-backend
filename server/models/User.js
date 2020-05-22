@@ -287,9 +287,9 @@ function toJSON() {
  */
 async function findByToken(token) {
   let User = this;
-  // let decoded = jwt.verify(token, SALT);
+  let decoded = jwt.verify(token, SALT);
   let user = await User.findOne({
-    // id: decoded.id,
+    id: decoded.id,
     'tokens.token': token,
     'tokens.access': 'auth',
   });
