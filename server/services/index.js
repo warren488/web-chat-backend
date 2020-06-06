@@ -1,5 +1,6 @@
 let User = require('../models/User');
 let Message = require('../models/Message');
+const { errorToMessage } = require('./error');
 // get our emojis to export through services
 const emojis = require('./emoji');
 const bcrypt = require('bcryptjs');
@@ -10,11 +11,23 @@ async function revokeAllTokens(req, res) {
   res.status(200).send({ message: 'success' });
 }
 
+async function generateUserFirebaseToken(req, res) {
+  try {
+    let token = await auth.createCustomToken(req.user._id.toString());
+    res.status(200).send({ message: 'successfully generated', token });
+  } catch (error) {
+    console.log(
+      `something went wrong while trying to generate the token`,
+      error
+    );
+  }
+}
+
 async function createUser(req, res) {
   try {
     // await User.schema.methods.validateSchema(req.body)
     let user = new User({ ...req.body, chats: [] });
-    
+
     let token = await user.generateAuthToken();
     // let token = await auth.createCustomToken(user.id);
     // await user.attachToken(token);
@@ -22,7 +35,8 @@ async function createUser(req, res) {
     return res.status(200).send({ user, token });
   } catch (error) {
     console.log(error);
-    return res.status(500).send(error);
+    let message = errorToMessage(error);
+    return res.status(500).send({ userMessage: message });
   }
 }
 
@@ -51,11 +65,11 @@ async function updateInfo(req, res) {
 
 async function getUsers(req, res) {
   const users = await User.filterByUsername(req.user._id, req.query.username);
+
   return res.status(200).send(users);
 }
 
 async function subScribeToPush(req, res) {
-  console.log(req.body);
   await req.user.subscribeToNotifs(JSON.stringify(req.body));
   return res.status(200).send({ message: 'successfully signed up to push' });
 }
@@ -139,26 +153,96 @@ async function HTMLauthenticate(req, res, next) {
   next();
 }
 
-async function addFriend(req, res) {
-  try {
-    let friend = await User.findOne({
-      username: req.body.username,
-    });
-    if (!friend) {
-      throw { message: 'user not found' };
-    }
-
-    let newFriendship = await req.user.addFriend(friend);
-    /** mongo does some fancy magic with their object that causes them not to quite behave regularly */
-    await friend.reAddFriend({
-      ...JSON.parse(JSON.stringify(req.user)),
-      friendship_id: newFriendship._id,
-    });
-    return res.status(200).send({ message: 'friend successfully added' });
-  } catch (err) {
-    console.log(err);
-    return res.status(500).send(err);
+async function hasRequestFrom(user1, user2) {
+  if (user1.interactions) {
+    let result = user1.interactions.receivedRequests.find(
+      (request) => user2._id === request.fromId.toString()
+    );
+    return !!result;
   }
+  return false;
+}
+
+function addFriend(io) {
+  return async function (req, res) {
+    try {
+      /** we need to check if we have a request from the user that is the ONLY way we have a right to add them as a friend */
+      /** we do this here and again later to try to avoid any unecessary trips to DB */
+      if (req.body.id && !hasRequestFrom(req.user, { _id: req.body.id })) {
+        throw {
+          message:
+            'you cannot add a user without first receiving a request from them',
+        };
+      }
+      let friend = await User.findOne({
+        username: req.body.username,
+      });
+      if (!friend) {
+        throw { message: 'user not found' };
+      }
+      if (
+        req.body.id &&
+        !hasRequestFrom(req.user, { _id: friend._id.toString() })
+      ) {
+        throw {
+          message:
+            'you cannot add a user without first receiving a request from them',
+        };
+      }
+
+      let newFriendshipData = await req.user.addFriend(friend);
+      /** mongo does some fancy magic with their object that causes them not to quite behave regularly */
+
+      req.user.interactions.receivedRequests = req.user.interactions.receivedRequests.filter(
+        (request) => request.fromId.toString() !== friend._id.toString()
+      );
+      friend.interactions.sentRequests = friend.interactions.sentRequests.filter(
+        (request) => request.userId.toString() !== req.user._id.toString()
+      );
+      /** these custom functions also save the document hence i dont need to save friend */
+      let [friendsFriendshipData] = await Promise.all([
+        friend.reAddFriend({
+          ...req.user.toJSON(),
+          friendship_id: newFriendshipData._id,
+        }),
+        req.user.save(),
+      ]);
+      io.to(friend._id.toString()).emit('newFriend', {
+        requestAccepted: true,
+        friendshipData: friendsFriendshipData,
+      });
+      io.to(req.user._id).emit('newFriend', {
+        friendshipData: newFriendshipData,
+      });
+      res.status(200).send({ message: 'friend successfully added' });
+    } catch (err) {
+      console.log(err);
+      res.status(500).send(err);
+    }
+  };
+}
+
+function sendFriendRequest(io) {
+  return async function (req, res) {
+    try {
+      await req.user.requestFriend(req.body.friendId);
+    } catch (error) {
+      console.log(error);
+      let message = errorToMessage(error);
+      return res.status(500).send({ userMessage: message });
+    }
+    io.to(req.body.friendId).emit('newFriendRequest', {
+      username: req.user.username,
+      /** so this gets duplicated because depending on the use case it checks different properties
+       * this data can be placed in a profile where it acts like profile data while having to simultaneously
+       * (somewhere else in the app) act like the simple interaction it is
+       */
+      fromId: req.user._id,
+      id: req.user._id,
+      acceptanceStatus: 'pending',
+    });
+    res.status(200).send({ message: 'friend requested' });
+  };
 }
 
 async function getFriends(req, res) {
@@ -189,6 +273,42 @@ async function getUser(req, res) {
 }
 
 async function getMe(req, res) {
+  let orQuery = [];
+  if (req.user.interactions && req.user.interactions.receivedRequests) {
+    // build our query to get all users with any of these ids
+    for (const friendRequest of req.user.interactions.receivedRequests) {
+      orQuery.push({ _id: friendRequest.fromId });
+    }
+    if (orQuery.length > 0) {
+      let requestedUsers = await User.find({ $or: orQuery });
+      // build out the new "look" of our interactions.receivedRequests, essentially attaching all user info
+      // to those elements of the array
+      let filteredRequests = req.user.interactions.receivedRequests.reduce(
+        (accumulator, request) => {
+          if (request.status !== 'denied') {
+            requestedUsers.forEach((user) => {
+              if (user._id.toString() === request.fromId.toString()) {
+                accumulator.push({
+                  ...user.toJSON(),
+                  acceptanceStatus: request.status,
+                  fromId: request.fromId,
+                });
+              }
+            });
+          }
+          return accumulator;
+        },
+        []
+      );
+      return res.status(200).send({
+        ...req.user.toJSON(),
+        interactions: {
+          sentRequests: req.user.interactions.sentRequests,
+          receivedRequests: filteredRequests,
+        },
+      });
+    }
+  }
   res.status(200).send(req.user);
 }
 
@@ -283,6 +403,7 @@ async function imageUpload(req, res) {
 
 module.exports = {
   getChatPage,
+  generateUserFirebaseToken,
   getLastMessage,
   getFriends,
   chatRedirect,
@@ -299,6 +420,7 @@ module.exports = {
   emojis,
   disablePush,
   logout,
+  sendFriendRequest,
   updateInfo,
   authenticate,
   HTMLauthenticate,

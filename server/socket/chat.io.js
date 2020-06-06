@@ -29,6 +29,7 @@ module.exports = async function ioconnection(io, activeUsers, status) {
           connected: true,
         };
         socket.join(friendship_id);
+        // socket.join(user._id)
       } catch (error) {
         console.log(error);
         callback(error, null);
@@ -50,6 +51,7 @@ module.exports = async function ioconnection(io, activeUsers, status) {
         for (const id of Ids) {
           socket.join(id);
         }
+        socket.join(user._id)
       } catch (error) {
         console.log(error);
         callback(error, null);
@@ -58,7 +60,6 @@ module.exports = async function ioconnection(io, activeUsers, status) {
     });
 
     socket.on('gotMessage', async function gotMessage(data, cb) {
-      console.log('got message');
       // do an update many and set both statuses (we will get the message(linking) Id)
       message = await Message.updateMany(
         { msgId: data.Ids[2] },
@@ -145,13 +146,9 @@ module.exports = async function ioconnection(io, activeUsers, status) {
     });
 
     socket.on('disconnect', (...args) => {
-      console.log('disconnect', args);
       delete activeUsers[socket.id];
     });
 
-    socket.on('reconnect', (...args) => {
-      console.log('reconnect', args);
-    });
   });
   status.attached = true;
 };

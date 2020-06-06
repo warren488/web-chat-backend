@@ -27,6 +27,7 @@ app.use(morgan('combined'));
 const port = process.env.PORT || 3000;
 const server = http.createServer(app);
 const io = socketIO(server);
+global.io = io;
 let status = { attached: false };
 const activeUsers = {};
 attachListeners(io, activeUsers, status);
@@ -38,7 +39,7 @@ const available = {
 }
 attachGameListeners(io, available);
 
-app.use("/api", apiRouter);
+app.use("/api", apiRouter(io));
 app.use("/io", ioActionsRouter(io));
 
 server.listen(port, () => {

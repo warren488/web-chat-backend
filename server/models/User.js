@@ -6,6 +6,7 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 const jwt = require('jsonwebtoken');
+const uniqueValidator = require('mongoose-unique-validator');
 const { SALT } = require('../config');
 const hash = require('../services/hash');
 const bcrypt = require('bcryptjs');
@@ -24,6 +25,20 @@ let userSchema = new mongoose.Schema({
       validator: validator.isEmail,
       message: '{VALUE} is not a valid email',
     },
+  },
+  interactions: {
+    receivedRequests: [
+      {
+        fromId: ObjectId,
+        status: String,
+      },
+    ],
+    sentRequests: [
+      {
+        userId: ObjectId,
+        status: String,
+      },
+    ],
   },
   pushKey: {
     type: String,
@@ -103,20 +118,19 @@ async function generateAuthToken() {
   return token;
 }
 
-async function attachToken(token){
+async function attachToken(token) {
   this.tokens = this.tokens.concat([
     {
       access: 'auth',
       token,
     },
   ]);
-  console.log(this)
   await this.save();
 }
 
-async function revokeAllTokens(){
+async function revokeAllTokens() {
   this.tokens = [];
-  await this.save()
+  await this.save();
 }
 
 /**
@@ -175,6 +189,62 @@ async function getLastMessage(friendship_id) {
     }
   );
   return chat;
+}
+
+async function recordFriendshipRequest(userId, requestorId) {
+  return User.findByIdAndUpdate(userId, {
+    $addToSet: {
+      'interactions.receivedRequests': [
+        {
+          status: 'pending',
+          fromId: requestorId,
+        },
+      ],
+    },
+  });
+}
+
+async function requestFriend(friendId) {
+  if (this.interactions) {
+    let receivedRequest = this.interactions.receivedRequests.find(
+      (request) => request.fromId.toString() === friendId
+    );
+    let sentRequest = this.interactions.sentRequests.find(
+      (request) => request.userId.toString() === friendId
+    );
+    if (!receivedRequest && !sentRequest) {
+      this.interactions.sentRequests = [
+        // we either spread the current array if it exists or we create a new one
+        ...(this.interactions.sentRequests || []),
+        { status: 'pending', userId: friendId },
+      ];
+
+      return Promise.all([
+        this.save(),
+        User.recordFriendshipRequest(friendId, this._id),
+      ]);
+    } else if (receivedRequest) {
+      throw {
+        userMessage: `pre-exisiting incoming request`,
+        status: receivedRequest.status,
+      };
+    } else if (sentRequest) {
+      /** @todo do we want users to know if there request has been denied or not for now lets say no */
+      throw {
+        userMessage: `friend request already sent`,
+      };
+    }
+  }
+
+  this.interactions = {
+    sentRequests: [
+      // we either spread the current array if it exists or we create a new one
+      ...(this.interactions.sentRequests || []),
+      { status: 'pending', userId: friendId },
+    ],
+  };
+
+  return Promise.all([this.save(), User.recordFriendshipRequest(this._id)]);
 }
 
 /**
@@ -252,7 +322,6 @@ async function disablePush() {
 async function addMessage(friendship_id, message) {
   // TODO: maybe we only need the status for our message as the user wont see status for messages
   // we sent, in which case the status would be set outside
-  console.log(message)
   const newMessage = new Message({
     status: 'sent',
     user_id: this._id,
@@ -277,6 +346,7 @@ function toJSON() {
     imgUrl: user.imgUrl,
     status: user.status,
     location: user.location,
+    interactions: user.interactions,
   };
 }
 
@@ -331,7 +401,6 @@ async function findByUsername(username) {
   let user = await this.findOne({
     username,
   });
-  console.log(user, username);
   if (!user) {
     throw { message: 'user not found' };
   }
@@ -410,20 +479,18 @@ async function updateInfo(info) {
     if (info.imgUrl) {
       updateObject['friends.$.imgUrl'] = info.imgUrl;
     }
-    console.log(
-      await User.updateMany(
-        {
-          $or: queryArray,
-          friends: {
-            $elemMatch: {
-              id: this._id,
-            },
+    await User.updateMany(
+      {
+        $or: queryArray,
+        friends: {
+          $elemMatch: {
+            id: this._id,
           },
         },
-        {
-          $set: updateObject,
-        }
-      )
+      },
+      {
+        $set: updateObject,
+      }
     );
   }
   return this.save();
@@ -437,6 +504,7 @@ const writableProperties = [
   'imgUrl',
   'status',
   'location',
+  'interactions',
 ];
 
 userSchema.methods.generateAuthToken = generateAuthToken;
@@ -454,11 +522,13 @@ userSchema.methods.getLastMessage = getLastMessage;
 userSchema.methods.toJSON = toJSON;
 userSchema.methods.removeToken = removeToken;
 userSchema.methods.getChatPage = getChatPage;
+userSchema.methods.requestFriend = requestFriend;
 userSchema.statics.findByToken = findByToken;
 userSchema.statics.findByCredentials = findByCredentials;
 userSchema.statics.findByUsername = findByUsername;
 userSchema.statics.filterByUsername = filterByUsername;
 userSchema.statics.writableProperties = writableProperties;
+userSchema.statics.recordFriendshipRequest = recordFriendshipRequest;
 
 userSchema.pre(
   'save',
@@ -479,6 +549,8 @@ userSchema.pre(
     }
   }
 );
+
+userSchema.plugin(uniqueValidator);
 
 let User = mongoose.model('User', userSchema);
 module.exports = User;
