@@ -17,12 +17,14 @@ let {
   addFriend,
   getFriends,
   chatRedirect,
+  crashReport,
   getMessages,
   getChatPage,
   getLastMessage,
 } = require('../services');
 
 module.exports = function (io) {
+  router.post('/crashreport', crashReport);
   router.post('/login', login);
   router.post('/logout', authenticate, logout);
   router.post('/signup', createUser);

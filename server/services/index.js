@@ -1,5 +1,6 @@
 let User = require('../models/User');
 let Message = require('../models/Message');
+let ErrorReport = require('../models/ErrorReport');
 const { errorToMessage } = require('./error');
 // get our emojis to export through services
 const emojis = require('./emoji');
@@ -26,7 +27,7 @@ async function generateUserFirebaseToken(req, res) {
 async function createUser(req, res) {
   try {
     // await User.schema.methods.validateSchema(req.body)
-    let user = new User({ ...req.body, chats: [] });
+    let user = new User({ ...req.body, chats: [], interactions: {receivedRequests: [], sentRequests: []} });
 
     let token = await user.generateAuthToken();
     // let token = await auth.createCustomToken(user.id);
@@ -70,8 +71,12 @@ async function getUsers(req, res) {
 }
 
 async function subScribeToPush(req, res) {
-  await req.user.subscribeToNotifs(JSON.stringify(req.body));
-  return res.status(200).send({ message: 'successfully signed up to push' });
+  try {
+    await req.user.subscribeToNotifs(JSON.stringify(req.body));
+    return res.status(200).send({ message: 'successfully signed up to push' });
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 async function disablePush(req, res) {
@@ -386,6 +391,17 @@ function sweep(io) {
   };
 }
 
+async function crashReport(req, res){
+  let error = req.body.error;
+  if(typeof req.body.error === "object"){
+    error = JSON.stringify(req.body.error)
+  }
+  let report = new ErrorReport({...req.body, error});
+  await report.save();
+
+  res.send();
+}
+
 async function imageUpload(req, res) {
   // try {
   //   // Create a root reference
@@ -412,6 +428,7 @@ module.exports = {
   login,
   subScribeToPush,
   revokeAllTokens,
+  crashReport,
   logout,
   imageUpload,
   getMe,
