@@ -22,7 +22,10 @@ const app = express();
 app.use(bodyParser.json({limit: '10mb', extended: true}));
 app.use(cookieParser());
 app.use(cors());
-app.use(morgan('combined'));
+if(process.env.NODE_ENV !== "production"){
+  app.use(morgan('combined'));
+}
+
 
 const port = process.env.PORT || 3000;
 const server = http.createServer(app);

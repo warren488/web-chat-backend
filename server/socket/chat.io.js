@@ -38,25 +38,47 @@ module.exports = async function ioconnection(io, activeUsers, status) {
     });
 
     socket.on('masCheckin', async function masCheckin(
-      { token, data: Ids },
+      { token, data: friendshipLastMessages },
       callback
     ) {
+      let user, missedMessages, missedMessagesByChat;
       try {
-        let user;
         user = await User.findByToken(token);
         activeUsers[socket.id] = {
           userId: user._id.toString(),
           connected: true,
         };
-        for (const id of Ids) {
+        let orQuery = [];
+        for (const id in friendshipLastMessages) {
           socket.join(id);
+          if (friendshipLastMessages[id]) {
+            orQuery.push({
+              user_id: user._id,
+              friendship_id: id,
+              createdAt: {
+                $gte: parseInt(friendshipLastMessages[id].createdAt),
+              },
+            });
+          }
         }
+        if (orQuery.length > 0) {
+          missedMessages = await Message.find({ $or: orQuery });
+        }
+        missedMessagesByChat = {};
+        for (message of missedMessages) {
+          if (!(message.friendship_id in missedMessagesByChat)) {
+            missedMessagesByChat[message.friendship_id] = [message];
+          } else {
+            missedMessagesByChat[message.friendship_id].push(message);
+          }
+        }
+
         socket.join(user._id);
       } catch (error) {
         console.log(error);
         callback(error, null);
       }
-      return callback ? callback(null) : null;
+      return callback ? callback(null, missedMessagesByChat) : null;
     });
 
     socket.on('gotMessage', async function gotMessage(data, cb) {
