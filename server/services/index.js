@@ -329,7 +329,7 @@ async function getMessages(req, res) {
       params: { friendship_id },
       query: { limit },
     } = req;
-    let currentChat = await req.user.getChat(friendship_id, parseInt(limit));
+    let currentChat = (await req.user.getChat(friendship_id, parseInt(limit))).reverse();
     res.status(200).send(currentChat);
   } catch (e) {
     res.status(500).send({ message: 'error retrieving messages' });
@@ -343,11 +343,11 @@ async function getChatPage(req, res) {
         'please remember that both the limit and timestamp qparams must be present',
     });
   }
-  let currentChat = await req.user.getChatPage(
+  let currentChat = (await req.user.getChatPage(
     req.params.friendship_id,
     parseInt(req.query.limit),
     parseInt(req.query.timestamp)
-  );
+  )).reverse();
   return res.status(200).send(currentChat);
 }
 

@@ -51,7 +51,7 @@ module.exports = async function ioconnection(io, activeUsers, status) {
         for (const id of Ids) {
           socket.join(id);
         }
-        socket.join(user._id)
+        socket.join(user._id);
       } catch (error) {
         console.log(error);
         callback(error, null);
@@ -71,7 +71,8 @@ module.exports = async function ioconnection(io, activeUsers, status) {
       );
       io.to(data.friendship_id).emit('received', {
         friendship_id: data.friendship_id,
-        Ids: [data.Ids[1]],
+        Id: data.Ids[1],
+        createdAt: data.createdAt,
       });
     });
 
@@ -138,7 +139,7 @@ module.exports = async function ioconnection(io, activeUsers, status) {
         });
         /** @todo do i really need to wait on this to finish? */
         await sendPushMessage(user, { from: user.username, ...messageData });
-        return callback(null, myMsgId);
+        return callback(null, { msgId: myMsgId, createdAt: message.createdAt });
       } catch (error) {
         console.log(error);
         callback(error, null);
@@ -148,7 +149,6 @@ module.exports = async function ioconnection(io, activeUsers, status) {
     socket.on('disconnect', (...args) => {
       delete activeUsers[socket.id];
     });
-
   });
   status.attached = true;
 };

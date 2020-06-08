@@ -66,8 +66,8 @@ async function markAsReceived(friendship_id, range, username) {
         $ne: username,
       },
       createdAt: {
-        $lte: range[0],
-        $gte: range[1],
+        $gte: range[0],
+        $lte: range[1],
       },
     },
     {
