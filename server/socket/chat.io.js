@@ -53,6 +53,7 @@ module.exports = async function ioconnection(io, activeUsers, status) {
           socket.join(id);
           if (friendshipLastMessages[id]) {
             orQuery.push({
+              _id: { $ne: { _id: friendshipLastMessages[id]._id } },
               user_id: user._id,
               friendship_id: id,
               createdAt: {
