@@ -9,6 +9,7 @@ let {
   updateInfo,
   revokeAllTokens,
   disablePush,
+  previewLink,
   subScribeToPush,
   imageUpload,
   createUser,
@@ -55,6 +56,7 @@ module.exports = function (io) {
   router.get('/users/:username', getUser);
   router.post('/users/:username/unsubscribe', authenticate, disablePush);
   router.post('/users/:username/subscribe', authenticate, subScribeToPush);
+  router.post('/getpreview', authenticate, previewLink);
 
   // file handling routes
   router.post('/image', authenticate, imageUpload);

@@ -6,6 +6,8 @@ const { errorToMessage } = require('./error');
 const emojis = require('./emoji');
 const bcrypt = require('bcryptjs');
 const auth = require('./auth');
+const https = require('https');
+const cheerio = require('cheerio');
 
 async function revokeAllTokens(req, res) {
   await req.user.revokeAllTokens();
@@ -27,7 +29,11 @@ async function generateUserFirebaseToken(req, res) {
 async function createUser(req, res) {
   try {
     // await User.schema.methods.validateSchema(req.body)
-    let user = new User({ ...req.body, chats: [], interactions: {receivedRequests: [], sentRequests: []} });
+    let user = new User({
+      ...req.body,
+      chats: [],
+      interactions: { receivedRequests: [], sentRequests: [] },
+    });
 
     let token = await user.generateAuthToken();
     // let token = await auth.createCustomToken(user.id);
@@ -329,7 +335,9 @@ async function getMessages(req, res) {
       params: { friendship_id },
       query: { limit },
     } = req;
-    let currentChat = (await req.user.getChat(friendship_id, parseInt(limit))).reverse();
+    let currentChat = (
+      await req.user.getChat(friendship_id, parseInt(limit))
+    ).reverse();
     res.status(200).send(currentChat);
   } catch (e) {
     res.status(500).send({ message: 'error retrieving messages' });
@@ -343,12 +351,60 @@ async function getChatPage(req, res) {
         'please remember that both the limit and timestamp qparams must be present',
     });
   }
-  let currentChat = (await req.user.getChatPage(
-    req.params.friendship_id,
-    parseInt(req.query.limit),
-    parseInt(req.query.timestamp)
-  )).reverse();
+  let currentChat = (
+    await req.user.getChatPage(
+      req.params.friendship_id,
+      parseInt(req.query.limit),
+      parseInt(req.query.timestamp)
+    )
+  ).reverse();
   return res.status(200).send(currentChat);
+}
+
+const getPromise = (url) => {
+  return new Promise((resolve, reject) => {
+    https
+      .get(url, (resp) => {
+        let data = '';
+        resp.on('data', (chunk) => {
+          data += chunk;
+        });
+        resp.on('end', () => {
+          // console.log(data);
+          resolve(data);
+        });
+      })
+      .on('error', reject);
+  });
+};
+
+async function previewLink(req, res) {
+  try {
+    const html = await getPromise(req.body.url);
+    const $ = cheerio.load(html);
+    console.log($("meta"));
+    const getMetaRag = (name) => {
+      return (
+        $(`meta[name=${name}]`).attr('content') ||
+        $(`meta[name="og:${name}"]`).attr('content') ||
+        $(`meta[name="twitter:${name}"]`).attr('content') ||
+        $(`meta[property=${name}]`).attr('content') ||
+        $(`meta[property="og:${name}"]`).attr('content') ||
+        $(`meta[property="twitter:${name}"]`).attr('content') ||
+        $(`meta[itemprop="${name}"]`).attr('content')
+      );
+    };
+    let data = {
+      title: getMetaRag('title'),
+      image: getMetaRag('image'),
+      description: getMetaRag('description'),
+      id: req.body.id,
+    };
+    return res.status(200).send(data);
+  } catch (e) {
+    console.log(e);
+    return res.status(500).send({message: "error"});
+  }
 }
 
 async function getLastMessage(req, res) {
@@ -391,12 +447,12 @@ function sweep(io) {
   };
 }
 
-async function crashReport(req, res){
+async function crashReport(req, res) {
   let error = req.body.error;
-  if(typeof req.body.error === "object"){
-    error = JSON.stringify(req.body.error)
+  if (typeof req.body.error === 'object') {
+    error = JSON.stringify(req.body.error);
   }
-  let report = new ErrorReport({...req.body, error});
+  let report = new ErrorReport({ ...req.body, error });
   await report.save();
 
   res.send();
@@ -434,6 +490,7 @@ module.exports = {
   getMe,
   sweep,
   getUsers,
+  previewLink,
   emojis,
   disablePush,
   logout,
