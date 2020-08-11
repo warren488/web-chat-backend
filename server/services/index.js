@@ -382,7 +382,6 @@ async function previewLink(req, res) {
   try {
     const html = await getPromise(req.body.url);
     const $ = cheerio.load(html);
-    console.log($("meta"));
     const getMetaRag = (name) => {
       return (
         $(`meta[name=${name}]`).attr('content') ||
@@ -398,6 +397,7 @@ async function previewLink(req, res) {
       title: getMetaRag('title'),
       image: getMetaRag('image'),
       description: getMetaRag('description'),
+      url: req.body.url,
       id: req.body.id,
     };
     return res.status(200).send(data);

@@ -66,11 +66,13 @@ module.exports = async function ioconnection(io, activeUsers, status) {
           missedMessages = await Message.find({ $or: orQuery });
         }
         missedMessagesByChat = {};
-        for (message of missedMessages) {
-          if (!(message.friendship_id in missedMessagesByChat)) {
-            missedMessagesByChat[message.friendship_id] = [message];
-          } else {
-            missedMessagesByChat[message.friendship_id].push(message);
+        if(missedMessages){
+          for (message of missedMessages) {
+            if (!(message.friendship_id in missedMessagesByChat)) {
+              missedMessagesByChat[message.friendship_id] = [message];
+            } else {
+              missedMessagesByChat[message.friendship_id].push(message);
+            }
           }
         }
 
@@ -126,6 +128,9 @@ module.exports = async function ioconnection(io, activeUsers, status) {
           message.type = messageData.type;
           message.media = messageData.media;
           message.meta = messageData.meta;
+        }
+        if(messageData.linkPreview){
+          message.linkPreview = messageData.linkPreview;
         }
         if (messageData.hID) {
           let quoted = await Message.findById(messageData.hID);

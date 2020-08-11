@@ -6,6 +6,12 @@ let MessageSchema = new mongoose.Schema({
     type: ObjectId,
     required: true,
   },
+  linkPreview: {
+    title: String,
+    image: String,
+    description: String,
+    id: String,
+  },
   text: {
     type: String,
   },
