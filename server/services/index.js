@@ -1,5 +1,7 @@
 let User = require('../models/User');
 let Message = require('../models/Message');
+let Event = require('../models/Event');
+let EventMeta = require('../models/EventMeta');
 let ErrorReport = require('../models/ErrorReport');
 const { errorToMessage } = require('./error');
 // get our emojis to export through services
@@ -235,36 +237,54 @@ function addFriend(io) {
 
 function sendFriendRequest(io) {
   return async function (req, res) {
+    let requestRecipient
     try {
-      await req.user.requestFriend(req.body.friendId);
+      [, requestRecipient] = await req.user.requestFriend(req.body.friendId);
     } catch (error) {
       console.log(error);
       let message = errorToMessage(error);
       return res.status(500).send({ userMessage: message });
     }
+
+    const sentRequest = requestRecipient.interactions.receivedRequests.find(friendRequest => friendRequest.fromId.toString() === req.user._id.toString())
+    /** below we add the event to the db to serve us later on when the user reloads the page but for right now the 
+     * 'newFriendRequest' socket message serves as our 'Event' or 'Notification' so we only actually need to send that down
+     * I think we will need to consilidate how we handle these situations. Do we want to prioritize always usibg the 'Event system'
+     * or prioritize letting things have their own events and the event system take the backfoot
+     */
+    /**  @nb - if we want to add some additional meta data we can loop the user's request add the request id or something */
+    let event = new Event({
+      type: "friendRequest",
+      createdAt: Date.now(),
+      user_id: req.body.friendId,
+      meta: {
+        [EventMeta.FRIEND_REQUEST_META]: sentRequest._id
+      }
+    })
+    await event.save();
     io.to(req.body.friendId).emit('newFriendRequest', {
       username: req.user.username,
       /** so this gets duplicated because depending on the use case it checks different properties
        * this data can be placed in a profile where it acts like profile data while having to simultaneously
        * (somewhere else in the app) act like the simple interaction it is
        */
-      fromId: req.user._id,
-      id: req.user._id,
-      acceptanceStatus: 'pending',
+      createdAt: Date.now(),
+      ...sentRequest
     });
+
     res.status(200).send({ message: 'friend requested' });
   };
 }
 
 async function getFriends(req, res) {
-  let myFriends = JSON.parse(JSON.stringify(req.user.friends));
-  for (const index in myFriends) {
+  let myFriendShips = JSON.parse(JSON.stringify(req.user.friends));
+  for (const index in myFriendShips) {
     let lastMessage = await req.user.getLastMessage(
       req.user.friends[index]._id
     );
-    myFriends[index].lastMessage = Array.from(lastMessage);
+    myFriendShips[index].lastMessage = Array.from(lastMessage);
   }
-  return res.status(200).send(myFriends);
+  return res.status(200).send(myFriendShips);
 }
 
 async function getUser(req, res) {
@@ -458,21 +478,6 @@ async function crashReport(req, res) {
   res.send();
 }
 
-async function imageUpload(req, res) {
-  // try {
-  //   // Create a root reference
-  //   var storageRef = firebase.storage().ref();
-  //   // Create a reference to 'images/mountains.jpg'
-  //   var ref = storageRef.child('profileImages/mountains.jpg');
-  //   await ref.putString(req.body.imageData, 'data_url').then(function (snapshot) {
-  //     console.log('Uploaded a base64 string!');
-  //     res.status(200).send(true)
-  //   });
-  // } catch (error) {
-  //   console.log(error);
-  // }
-}
-
 module.exports = {
   getChatPage,
   generateUserFirebaseToken,
@@ -486,7 +491,6 @@ module.exports = {
   revokeAllTokens,
   crashReport,
   logout,
-  imageUpload,
   getMe,
   sweep,
   getUsers,

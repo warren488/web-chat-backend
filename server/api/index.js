@@ -59,7 +59,7 @@ module.exports = function (io) {
   router.post('/getpreview', authenticate, previewLink);
 
   // file handling routes
-  router.post('/image', authenticate, imageUpload);
+  // router.post('/image', authenticate, imageUpload);
 
   return router;
 };

@@ -57,7 +57,7 @@ let userSchema = new mongoose.Schema({
   },
   friends: [
     {
-      id: {
+      friendId: {
         type: ObjectId,
         required: true,
       },
@@ -201,7 +201,11 @@ async function recordFriendshipRequest(userId, requestorId) {
         },
       ],
     },
-  });
+  },
+  {
+    new: true
+  }
+  );
 }
 
 async function requestFriend(friendId) {
@@ -244,7 +248,7 @@ async function requestFriend(friendId) {
     ],
   };
 
-  return Promise.all([this.save(), User.recordFriendshipRequest(this._id)]);
+  return Promise.all([this.save(), User.recordFriendshipRequest(friendId, this._id)]);
 }
 
 /**
@@ -258,7 +262,7 @@ async function addFriend({ id, username, imgUrl }) {
   if (friend) {
     return friend;
   }
-  friend = { _id: new mongoose.Types.ObjectId(), id, username, imgUrl };
+  friend = { _id: new mongoose.Types.ObjectId(), friendId: id, username, imgUrl };
   this.friends = this.friends.concat([friend]);
   await this.save();
   return friend;
@@ -277,7 +281,7 @@ async function reAddFriend({ id, username, friendship_id, imgUrl }) {
   if (friend) {
     return friend;
   }
-  friend = { _id: friendship_id, id: id, username, imgUrl };
+  friend = { _id: friendship_id, friendId: id, username, imgUrl };
   this.friends = this.friends.concat([friend]);
   await this.save();
   return friend;
@@ -470,7 +474,7 @@ async function updateInfo(info) {
     let updateObject = {};
     for (const friend of this.friends) {
       queryArray.push({
-        _id: friend.id,
+        _id: friend.friendId,
       });
     }
     if (info.username) {
@@ -484,7 +488,7 @@ async function updateInfo(info) {
         $or: queryArray,
         friends: {
           $elemMatch: {
-            id: this._id,
+            friendId: this._id,
           },
         },
       },

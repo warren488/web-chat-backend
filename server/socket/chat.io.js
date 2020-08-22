@@ -18,7 +18,7 @@ module.exports = async function ioconnection(io, activeUsers, status) {
      * */
 
     socket.on('checkin', async function checkin(
-      { token, friendship_id },
+      { token, userId },
       callback
     ) {
       try {
@@ -28,7 +28,7 @@ module.exports = async function ioconnection(io, activeUsers, status) {
           userId: user._id.toString(),
           connected: true,
         };
-        socket.join(friendship_id);
+        socket.join(userId);
         // socket.join(user._id)
       } catch (error) {
         console.log(error);
