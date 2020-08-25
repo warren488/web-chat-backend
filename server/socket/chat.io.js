@@ -18,7 +18,7 @@ module.exports = async function ioconnection(io, activeUsers, status) {
      * */
 
     socket.on('checkin', async function checkin(
-      { token, userId },
+      { token, friendship_id, userId },
       callback
     ) {
       try {
@@ -28,8 +28,12 @@ module.exports = async function ioconnection(io, activeUsers, status) {
           userId: user._id.toString(),
           connected: true,
         };
-        socket.join(userId);
-        // socket.join(user._id)
+        if(friendship_id) {
+          socket.join(friendship_id);
+        }
+        if(userId) {
+          socket.join(userId)
+        }
       } catch (error) {
         console.log(error);
         callback(error, null);
@@ -40,7 +44,7 @@ module.exports = async function ioconnection(io, activeUsers, status) {
     socket.on('masCheckin', async function masCheckin(
       { token, data: friendshipLastMessages },
       callback
-    ) {
+      ) {
       let user, missedMessages, missedMessagesByChat;
       try {
         user = await User.findByToken(token);
@@ -75,7 +79,6 @@ module.exports = async function ioconnection(io, activeUsers, status) {
             }
           }
         }
-
         socket.join(user._id);
       } catch (error) {
         console.log(error);
@@ -151,8 +154,8 @@ module.exports = async function ioconnection(io, activeUsers, status) {
          * but is not the current user, this will replace an extra query
          */
         // this will actually search by the friendship id
-        let { id } = await user.findFriend(messageData.friendship_id, '_id');
-        let friend = await User.findById(id);
+        let { friendId } = await user.findFriend(messageData.friendship_id, '_id');
+        let friend = await User.findById(friendId);
         let theirMsgId = await friend.addMessage(messageData.friendship_id, {
           msgId,
           ...message,

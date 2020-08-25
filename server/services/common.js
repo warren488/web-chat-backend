@@ -7,7 +7,7 @@ async function sendPushMessage(user, { friendship_id, text, from }) {
       friends: {
         $elemMatch: {
           _id: friendship_id,
-          id: user._id,
+          friendId: user._id,
         },
       },
     },
