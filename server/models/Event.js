@@ -1,9 +1,14 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const ObjectId = mongoose.Schema.Types.ObjectId;
 /** @namespace */
 let EventSchema = new mongoose.Schema({
   type: {
     type: String,
+  },
+  seen: {
+    type: Boolean,
+    required: true,
+    default: false,
   },
   createdAt: {
     type: Number,
@@ -16,10 +21,45 @@ let EventSchema = new mongoose.Schema({
     index: true,
   },
   meta: {
-    type: Array
-  }
+    type: Array,
+  },
 });
 
-let Event = mongoose.model('Event', EventSchema);
+async function clearAllNotifs(user_id, timestamp) {
+  return this.updateMany(
+    {
+      user_id,
+      createdAt: {
+        $lte: timestamp,
+      },
+    },
+    {
+      $set: {
+        seen: true,
+      },
+    }
+  );
+}
+async function clearAllNotifsOfType({ user_id, timestamp, type }) {
+  return this.updateMany(
+    {
+      user_id,
+      createdAt: {
+        $lte: timestamp,
+      },
+      type,
+    },
+    {
+      $set: {
+        seen: true,
+      },
+    }
+  );
+}
+
+EventSchema.statics.clearAllNotifs = clearAllNotifs;
+EventSchema.statics.clearAllNotifsOfType = clearAllNotifsOfType;
+
+let Event = mongoose.model("Event", EventSchema);
 
 module.exports = Event;
