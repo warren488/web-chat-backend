@@ -537,5 +537,6 @@ module.exports = {
   HTMLauthenticate,
   getUserNotifications,
   addFriend,
+  clearNotifType,
   getUser,
 };
