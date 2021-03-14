@@ -265,7 +265,7 @@ async function addFriend({ id, username, imgUrl }) {
   friend = { _id: new mongoose.Types.ObjectId(), friendId: id, username, imgUrl };
   this.friends = this.friends.concat([friend]);
   this.interactions.receivedRequests = this.interactions.receivedRequests.filter(
-    (request) => request.fromId.toString() !== friend._id.toString()
+    (request) => request.fromId.toString() !== id.toString()
   );
   await this.save();
   return friend;
@@ -287,7 +287,7 @@ async function reAddFriend({ id, username, friendship_id, imgUrl }) {
   friend = { _id: friendship_id, friendId: id, username, imgUrl };
   this.friends = this.friends.concat([friend]);
   this.interactions.sentRequests = this.interactions.sentRequests.filter(
-    (request) => request.userId.toString() !== req.user._id.toString()
+    (request) => request.userId.toString() !== id.toString()
   );
   await this.save();
   return friend;
