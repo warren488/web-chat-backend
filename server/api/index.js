@@ -21,6 +21,7 @@ let {
   crashReport,
   getMessages,
   getChatPage,
+  getUserNotifications,
   getLastMessage,
 } = require('../services');
 
@@ -33,6 +34,7 @@ module.exports = function (io) {
   router.get('/users/me', authenticate, getMe);
   router.post('/users/me', authenticate, updateInfo);
   router.post('/users/me/friendRequests', authenticate, sendFriendRequest(io));
+  router.get('/users/me/notifications', authenticate, getUserNotifications);
   router.delete('/users/me/tokens', authenticate, revokeAllTokens);
   router.delete('/users/me/token', authenticate, logout);
   router.post(
@@ -59,7 +61,7 @@ module.exports = function (io) {
   router.post('/getpreview', authenticate, previewLink);
 
   // file handling routes
-  router.post('/image', authenticate, imageUpload);
+  // router.post('/image', authenticate, imageUpload);
 
   return router;
 };

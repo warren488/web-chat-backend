@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const ObjectId = mongoose.Schema.Types.ObjectId;
 /** @namespace */
 let MessageSchema = new mongoose.Schema({
@@ -63,13 +63,16 @@ let MessageSchema = new mongoose.Schema({
   },
 });
 
-async function markAsReceived(friendship_id, range, username) {
+async function markAsReceived({ friendship_id, range, username, read }) {
   return this.updateMany(
     {
       friendship_id,
       /** @todo changename failure */
       from: {
         $ne: username,
+      },
+      status: {
+        $ne: "read"
       },
       createdAt: {
         $gte: range[0],
@@ -78,7 +81,7 @@ async function markAsReceived(friendship_id, range, username) {
     },
     {
       $set: {
-        status: 'received',
+        status: read ? "read" : "received",
       },
     }
   );
@@ -86,6 +89,6 @@ async function markAsReceived(friendship_id, range, username) {
 
 MessageSchema.statics.markAsReceived = markAsReceived;
 
-let Message = mongoose.model('Message', MessageSchema);
+let Message = mongoose.model("Message", MessageSchema);
 
 module.exports = Message;

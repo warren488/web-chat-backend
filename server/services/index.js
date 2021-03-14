@@ -1,23 +1,25 @@
-let User = require('../models/User');
-let Message = require('../models/Message');
-let ErrorReport = require('../models/ErrorReport');
-const { errorToMessage } = require('./error');
+let User = require("../models/User");
+let Message = require("../models/Message");
+let Event = require("../models/Event");
+let EventMeta = require("../models/EventMeta");
+let ErrorReport = require("../models/ErrorReport");
+const { errorToMessage } = require("./error");
 // get our emojis to export through services
-const emojis = require('./emoji');
-const bcrypt = require('bcryptjs');
-const auth = require('./auth');
-const https = require('https');
-const cheerio = require('cheerio');
+const emojis = require("./emoji");
+const bcrypt = require("bcryptjs");
+const auth = require("./auth");
+const https = require("https");
+const cheerio = require("cheerio");
 
 async function revokeAllTokens(req, res) {
   await req.user.revokeAllTokens();
-  res.status(200).send({ message: 'success' });
+  res.status(200).send({ message: "success" });
 }
 
 async function generateUserFirebaseToken(req, res) {
   try {
     let token = await auth.createCustomToken(req.user._id.toString());
-    res.status(200).send({ message: 'successfully generated', token });
+    res.status(200).send({ message: "successfully generated", token });
   } catch (error) {
     console.log(
       `something went wrong while trying to generate the token`,
@@ -54,7 +56,7 @@ async function updateInfo(req, res) {
       !bcrypt.compareSync(req.body.currentPassword, req.user.password)
     ) {
       return res.status(401).send({
-        message: 'must provide current valid password in order to change info',
+        message: "must provide current valid password in order to change info",
       });
     }
     if (req.body.newPassword) {
@@ -63,10 +65,10 @@ async function updateInfo(req, res) {
     await req.user.updateInfo(req.body);
     res
       .status(200)
-      .send({ message: 'info updated successfully', user: req.user });
+      .send({ message: "info updated successfully", user: req.user });
   } catch (error) {
     console.log(error);
-    res.status(500).send({ message: 'error occurred' });
+    res.status(500).send({ message: "error occurred" });
   }
 }
 
@@ -79,7 +81,7 @@ async function getUsers(req, res) {
 async function subScribeToPush(req, res) {
   try {
     await req.user.subscribeToNotifs(JSON.stringify(req.body));
-    return res.status(200).send({ message: 'successfully signed up to push' });
+    return res.status(200).send({ message: "successfully signed up to push" });
   } catch (error) {
     console.log(error);
   }
@@ -87,7 +89,7 @@ async function subScribeToPush(req, res) {
 
 async function disablePush(req, res) {
   await req.user.disablePush();
-  return res.status(200).send({ message: 'push successfully disabled' });
+  return res.status(200).send({ message: "push successfully disabled" });
 }
 
 async function login(req, res) {
@@ -98,7 +100,7 @@ async function login(req, res) {
       token = req.body.token;
       user = await User.findByToken(req.body.token);
     } else {
-      user = await User.findByCredentials('username', req.body);
+      user = await User.findByCredentials("username", req.body);
 
       token = await user.generateAuthToken();
       // token = await auth.createCustomToken(user.id);
@@ -108,9 +110,9 @@ async function login(req, res) {
     return res.status(200).send({ token, username: user.username });
   } catch (error) {
     console.log(error);
-    if (error.message === 'incorrect credentials') {
+    if (error.message === "incorrect credentials") {
       return res.status(401).send(error);
-    } else if (error.message === 'user not found') {
+    } else if (error.message === "user not found") {
       return res.status(404).send(error);
     }
     return res.status(500).send(error);
@@ -118,10 +120,10 @@ async function login(req, res) {
 }
 
 async function logout(req, res) {
-  let token = req.header('x-auth');
+  let token = req.header("x-auth");
   try {
     await req.user.removeToken(token);
-    return res.status(200).send({ message: 'logout successful' });
+    return res.status(200).send({ message: "logout successful" });
   } catch (error) {
     console.log(error);
     return res.status(500).send(error);
@@ -129,16 +131,16 @@ async function logout(req, res) {
 }
 
 async function authenticate(req, res, next) {
-  let token = req.header('x-auth');
+  let token = req.header("x-auth");
   let user;
   try {
     user = await User.findByToken(token);
     if (!user) {
-      throw 'not found';
+      throw "not found";
     }
   } catch (error) {
     console.log(error);
-    return res.status(401).send({ message: 'request authentication failed' });
+    return res.status(401).send({ message: "request authentication failed" });
   }
   req.user = user;
   req.token = token;
@@ -153,11 +155,11 @@ async function HTMLauthenticate(req, res, next) {
       user = await User.findByToken(token);
     }
     if (!user) {
-      throw 'not found';
+      throw "not found";
     }
   } catch (error) {
     console.log(error);
-    return res.redirect(303, '/login');
+    return res.redirect(303, "/login");
   }
   req.user = user;
   req.token = token;
@@ -182,14 +184,14 @@ function addFriend(io) {
       if (req.body.id && !hasRequestFrom(req.user, { _id: req.body.id })) {
         throw {
           message:
-            'you cannot add a user without first receiving a request from them',
+            "you cannot add a user without first receiving a request from them",
         };
       }
       let friend = await User.findOne({
         username: req.body.username,
       });
       if (!friend) {
-        throw { message: 'user not found' };
+        throw { message: "user not found" };
       }
       if (
         req.body.id &&
@@ -197,19 +199,13 @@ function addFriend(io) {
       ) {
         throw {
           message:
-            'you cannot add a user without first receiving a request from them',
+            "you cannot add a user without first receiving a request from them",
         };
       }
 
       let newFriendshipData = await req.user.addFriend(friend);
       /** mongo does some fancy magic with their object that causes them not to quite behave regularly */
 
-      req.user.interactions.receivedRequests = req.user.interactions.receivedRequests.filter(
-        (request) => request.fromId.toString() !== friend._id.toString()
-      );
-      friend.interactions.sentRequests = friend.interactions.sentRequests.filter(
-        (request) => request.userId.toString() !== req.user._id.toString()
-      );
       /** these custom functions also save the document hence i dont need to save friend */
       let [friendsFriendshipData] = await Promise.all([
         friend.reAddFriend({
@@ -218,14 +214,14 @@ function addFriend(io) {
         }),
         req.user.save(),
       ]);
-      io.to(friend._id.toString()).emit('newFriend', {
+      io.to(friend._id.toString()).emit("newFriend", {
         requestAccepted: true,
         friendshipData: friendsFriendshipData,
       });
-      io.to(req.user._id).emit('newFriend', {
+      io.to(req.user._id).emit("newFriend", {
         friendshipData: newFriendshipData,
       });
-      res.status(200).send({ message: 'friend successfully added' });
+      res.status(200).send({ message: "friend successfully added" });
     } catch (err) {
       console.log(err);
       res.status(500).send(err);
@@ -235,36 +231,55 @@ function addFriend(io) {
 
 function sendFriendRequest(io) {
   return async function (req, res) {
+    let requestRecipient;
     try {
-      await req.user.requestFriend(req.body.friendId);
+      [, requestRecipient] = await req.user.requestFriend(req.body.friendId);
     } catch (error) {
       console.log(error);
       let message = errorToMessage(error);
       return res.status(500).send({ userMessage: message });
     }
-    io.to(req.body.friendId).emit('newFriendRequest', {
-      username: req.user.username,
-      /** so this gets duplicated because depending on the use case it checks different properties
-       * this data can be placed in a profile where it acts like profile data while having to simultaneously
-       * (somewhere else in the app) act like the simple interaction it is
-       */
-      fromId: req.user._id,
-      id: req.user._id,
-      acceptanceStatus: 'pending',
+
+    const sentRequest = requestRecipient.interactions.receivedRequests.find(
+      (friendRequest) =>
+        friendRequest.fromId.toString() === req.user._id.toString()
+    );
+    /** below we add the event to the db to serve us later on when the user reloads the page but for right now the
+     * 'newFriendRequest' socket message serves as our 'Event' or 'Notification' so we only actually need to send that down
+     * I think we will need to consilidate how we handle these situations. Do we want to prioritize always usibg the 'Event system'
+     * or prioritize letting things have their own events and the event system take the backfoot
+     */
+    /**  @nb - if we want to add some additional meta data we can loop the user's request add the request id or something */
+    let event = new Event({
+      type: "friendRequest",
+      createdAt: Date.now(),
+      user_id: req.body.friendId,
+      meta_reference: {
+        _id: sentRequest._id,
+      },
     });
-    res.status(200).send({ message: 'friend requested' });
+    /** do i really want to fail if we dont store this event */
+    await event.save();
+    io.to(req.body.friendId).emit("newFriendRequest", {
+      username: req.user.username,
+      eventData: { ...event },
+      createdAt: Date.now(),
+      ...sentRequest,
+    });
+
+    res.status(200).send({ message: "friend requested" });
   };
 }
 
 async function getFriends(req, res) {
-  let myFriends = JSON.parse(JSON.stringify(req.user.friends));
-  for (const index in myFriends) {
+  let myFriendShips = JSON.parse(JSON.stringify(req.user.friends));
+  for (const index in myFriendShips) {
     let lastMessage = await req.user.getLastMessage(
       req.user.friends[index]._id
     );
-    myFriends[index].lastMessage = Array.from(lastMessage);
+    myFriendShips[index].lastMessage = Array.from(lastMessage);
   }
-  return res.status(200).send(myFriends);
+  return res.status(200).send(myFriendShips);
 }
 
 async function getUser(req, res) {
@@ -276,10 +291,30 @@ async function getUser(req, res) {
     res.status(200).send(user);
   } catch (e) {
     console.log(e);
-    if (e.message === 'user not found') {
+    if (e.message === "user not found") {
       return res.status(200).send({ exists: false });
     }
-    res.status(500).send({ message: 'error searching for user' });
+    res.status(500).send({ message: "error searching for user" });
+  }
+}
+
+async function getUserNotifications(req, res) {
+  try {
+    let events = await Event.find({
+      user_id: req.user.id,
+      seen: false,
+    });
+    splitEvents = {};
+    events.forEach((event) => {
+      if (!splitEvents[event.type]) {
+        splitEvents[event.type] = [];
+      }
+      splitEvents[event.type].push(event);
+    });
+    res.status(200).send(splitEvents);
+  } catch (e) {
+    console.log(e);
+    res.status(500).send({ message: "error searching for user" });
   }
 }
 
@@ -296,7 +331,7 @@ async function getMe(req, res) {
       // to those elements of the array
       let filteredRequests = req.user.interactions.receivedRequests.reduce(
         (accumulator, request) => {
-          if (request.status !== 'denied') {
+          if (request.status !== "denied") {
             requestedUsers.forEach((user) => {
               if (user._id.toString() === request.fromId.toString()) {
                 accumulator.push({
@@ -326,7 +361,7 @@ async function getMe(req, res) {
 // TODO: eventually remove after the frontend uses direct links
 async function chatRedirect(req, res) {
   fid = req.body.friendship_id.toString();
-  return res.status(278).send({ redirect: '/users/me/' + fid });
+  return res.status(278).send({ redirect: "/users/me/" + fid });
 }
 
 async function getMessages(req, res) {
@@ -340,7 +375,7 @@ async function getMessages(req, res) {
     ).reverse();
     res.status(200).send(currentChat);
   } catch (e) {
-    res.status(500).send({ message: 'error retrieving messages' });
+    res.status(500).send({ message: "error retrieving messages" });
   }
 }
 
@@ -348,7 +383,7 @@ async function getChatPage(req, res) {
   if (!req.query.limit || !req.query.timestamp) {
     res.status(400).send({
       message:
-        'please remember that both the limit and timestamp qparams must be present',
+        "please remember that both the limit and timestamp qparams must be present",
     });
   }
   let currentChat = (
@@ -365,16 +400,16 @@ const getPromise = (url) => {
   return new Promise((resolve, reject) => {
     https
       .get(url, (resp) => {
-        let data = '';
-        resp.on('data', (chunk) => {
+        let data = "";
+        resp.on("data", (chunk) => {
           data += chunk;
         });
-        resp.on('end', () => {
+        resp.on("end", () => {
           // console.log(data);
           resolve(data);
         });
       })
-      .on('error', reject);
+      .on("error", reject);
   });
 };
 
@@ -384,26 +419,26 @@ async function previewLink(req, res) {
     const $ = cheerio.load(html);
     const getMetaRag = (name) => {
       return (
-        $(`meta[name=${name}]`).attr('content') ||
-        $(`meta[name="og:${name}"]`).attr('content') ||
-        $(`meta[name="twitter:${name}"]`).attr('content') ||
-        $(`meta[property=${name}]`).attr('content') ||
-        $(`meta[property="og:${name}"]`).attr('content') ||
-        $(`meta[property="twitter:${name}"]`).attr('content') ||
-        $(`meta[itemprop="${name}"]`).attr('content')
+        $(`meta[name=${name}]`).attr("content") ||
+        $(`meta[name="og:${name}"]`).attr("content") ||
+        $(`meta[name="twitter:${name}"]`).attr("content") ||
+        $(`meta[property=${name}]`).attr("content") ||
+        $(`meta[property="og:${name}"]`).attr("content") ||
+        $(`meta[property="twitter:${name}"]`).attr("content") ||
+        $(`meta[itemprop="${name}"]`).attr("content")
       );
     };
     let data = {
-      title: getMetaRag('title'),
-      image: getMetaRag('image'),
-      description: getMetaRag('description'),
+      title: getMetaRag("title"),
+      image: getMetaRag("image"),
+      description: getMetaRag("description"),
       url: req.body.url,
       id: req.body.id,
     };
     return res.status(200).send(data);
   } catch (e) {
     console.log(e);
-    return res.status(500).send({message: "error"});
+    return res.status(500).send({ message: "error" });
   }
 }
 
@@ -428,49 +463,47 @@ function sweep(io) {
      */
 
     try {
-      let { friendship_id, range } = req.body;
-      let info = await Message.markAsReceived(
+      let { friendship_id, range, read } = req.body;
+      let info = await Message.markAsReceived({
         friendship_id,
         range,
-        req.user.username
-      );
-      res.status(200).send({ message: 'success' });
-      io.to(friendship_id).emit('sweep', {
+        username: req.user.username,
+        read,
+      });
+      res.status(200).send({ message: "success" });
+      io.to(friendship_id).emit("sweep", {
         range,
         friendship_id,
         fromId: req.user._id,
       });
       return;
     } catch (e) {
-      res.status(500).send({ message: 'error retrieving messages' });
+      res.status(500).send({ message: "error retrieving messages" });
     }
+  };
+}
+
+function clearNotifType(io) {
+  /** we actually dont really need io here except for
+   * updating if the user is logged in on multiple devices
+   */
+  return async (req, res) => {
+    const { type, timestamp } = req.body;
+    await Event.clearAllNotifsOfType({ type, timestamp, user_id: req.user.id });
+    res.status(200).send({ message: "success" });
+    io.to(req.user.id).emit("clearnotiftype", { type, timestamp });
   };
 }
 
 async function crashReport(req, res) {
   let error = req.body.error;
-  if (typeof req.body.error === 'object') {
+  if (typeof req.body.error === "object") {
     error = JSON.stringify(req.body.error);
   }
   let report = new ErrorReport({ ...req.body, error });
   await report.save();
 
   res.send();
-}
-
-async function imageUpload(req, res) {
-  // try {
-  //   // Create a root reference
-  //   var storageRef = firebase.storage().ref();
-  //   // Create a reference to 'images/mountains.jpg'
-  //   var ref = storageRef.child('profileImages/mountains.jpg');
-  //   await ref.putString(req.body.imageData, 'data_url').then(function (snapshot) {
-  //     console.log('Uploaded a base64 string!');
-  //     res.status(200).send(true)
-  //   });
-  // } catch (error) {
-  //   console.log(error);
-  // }
 }
 
 module.exports = {
@@ -486,7 +519,6 @@ module.exports = {
   revokeAllTokens,
   crashReport,
   logout,
-  imageUpload,
   getMe,
   sweep,
   getUsers,
@@ -498,6 +530,8 @@ module.exports = {
   updateInfo,
   authenticate,
   HTMLauthenticate,
+  getUserNotifications,
   addFriend,
+  clearNotifType,
   getUser,
 };
