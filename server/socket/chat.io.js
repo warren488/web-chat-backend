@@ -90,10 +90,10 @@ module.exports = async function ioconnection(io, activeUsers, status) {
     socket.on('gotMessage', async function gotMessage(data, cb) {
       // do an update many and set both statuses (we will get the message(linking) Id)
       message = await Message.updateMany(
-        { msgId: data.Ids[2] },
+        { msgId: data.Ids[2], status: { $ne: 'read' } },
         {
           $set: {
-            status: 'received',
+            status: data.read ? 'read' : 'received',
           },
         }
       );

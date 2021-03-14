@@ -20,7 +20,7 @@ let EventSchema = new mongoose.Schema({
     required: true,
     index: true,
   },
-  meta: {
+  meta_reference: {
     type: Array,
   },
 });

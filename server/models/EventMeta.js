@@ -1,3 +1,8 @@
+const User = require("./User");
+
 module.exports = Object.freeze({
-    FRIEND_REQUEST_META: 'users/interactions/receivedRequests/_id'
-})
+  friendRequest: async ({ user_id, id }) => {
+    const user = await User.findById(user_id);
+    return user.interactions.friendRequest
+  },
+});

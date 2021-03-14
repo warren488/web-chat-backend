@@ -206,12 +206,6 @@ function addFriend(io) {
       let newFriendshipData = await req.user.addFriend(friend);
       /** mongo does some fancy magic with their object that causes them not to quite behave regularly */
 
-      req.user.interactions.receivedRequests = req.user.interactions.receivedRequests.filter(
-        (request) => request.fromId.toString() !== friend._id.toString()
-      );
-      friend.interactions.sentRequests = friend.interactions.sentRequests.filter(
-        (request) => request.userId.toString() !== req.user._id.toString()
-      );
       /** these custom functions also save the document hence i dont need to save friend */
       let [friendsFriendshipData] = await Promise.all([
         friend.reAddFriend({
@@ -260,8 +254,8 @@ function sendFriendRequest(io) {
       type: "friendRequest",
       createdAt: Date.now(),
       user_id: req.body.friendId,
-      meta: {
-        [EventMeta.FRIEND_REQUEST_META]: sentRequest._id,
+      meta_reference: {
+        _id: sentRequest._id,
       },
     });
     /** do i really want to fail if we dont store this event */
@@ -469,12 +463,13 @@ function sweep(io) {
      */
 
     try {
-      let { friendship_id, range } = req.body;
-      let info = await Message.markAsReceived(
+      let { friendship_id, range, read } = req.body;
+      let info = await Message.markAsReceived({
         friendship_id,
         range,
-        req.user.username
-      );
+        username: req.user.username,
+        read,
+      });
       res.status(200).send({ message: "success" });
       io.to(friendship_id).emit("sweep", {
         range,
@@ -488,7 +483,7 @@ function sweep(io) {
   };
 }
 
-async function clearNotifType(io) {
+function clearNotifType(io) {
   /** we actually dont really need io here except for
    * updating if the user is logged in on multiple devices
    */
