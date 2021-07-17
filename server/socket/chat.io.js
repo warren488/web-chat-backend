@@ -101,6 +101,7 @@ module.exports = async function ioconnection(io, activeUsers, status) {
         friendship_id: data.friendship_id,
         Id: data.Ids[1],
         createdAt: data.createdAt,
+        read: data.read
       });
     });
 
