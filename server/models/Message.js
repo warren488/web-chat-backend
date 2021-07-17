@@ -63,13 +63,12 @@ let MessageSchema = new mongoose.Schema({
   },
 });
 
-async function markAsReceived({ friendship_id, range, username, read }) {
+async function markAsReceived({ friendship_id, range, fromId, read }) {
   return this.updateMany(
     {
       friendship_id,
-      /** @todo changename failure */
-      from: {
-        $ne: username,
+      fromId: {
+        $ne: fromId,
       },
       status: {
         $ne: "read"

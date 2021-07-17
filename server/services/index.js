@@ -467,7 +467,7 @@ function sweep(io) {
       let info = await Message.markAsReceived({
         friendship_id,
         range,
-        username: req.user.username,
+        fromId: req.user._id,
         read,
       });
       res.status(200).send({ message: "success" });
@@ -475,6 +475,7 @@ function sweep(io) {
         range,
         friendship_id,
         fromId: req.user._id,
+        read,
       });
       return;
     } catch (e) {
