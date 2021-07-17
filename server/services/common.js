@@ -1,7 +1,7 @@
 const webpush = require('web-push');
 let User = require('../models/User');
 
-async function sendPushMessage(user, { friendship_id, text, from, media, createdAt }) {
+async function sendPushMessage(user, { friendship_id, text, fromId, media, createdAt }) {
   const receiver = await User.findOne(
     {
       friends: {
@@ -22,7 +22,7 @@ async function sendPushMessage(user, { friendship_id, text, from, media, created
     const payload = JSON.stringify({
       title: `${user.username}`,
       text: media ? `new ${media}` : text,
-      from,
+      fromId,
       createdAt
     });
     if (receiver.pushKey) {
