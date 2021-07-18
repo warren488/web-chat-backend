@@ -170,7 +170,7 @@ module.exports = async function ioconnection(io, activeUsers, status) {
           },
         });
         /** @todo do i really need to wait on this to finish? */
-        await sendPushMessage(user, { from: user.username, ...message });
+        await sendPushMessage(user, { friendship_id: messageData.friendship_id, ...message });
         return callback(null, { msgId: myMsgId, createdAt: message.createdAt });
       } catch (error) {
         console.log(error);
