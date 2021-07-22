@@ -99,7 +99,7 @@ module.exports = async function ioconnection(io, activeUsers, status) {
       );
       io.to(data.friendship_id).emit('received', {
         friendship_id: data.friendship_id,
-        Id: data.Ids[1],
+        msgId: data.Ids[2],
         createdAt: data.createdAt,
         read: data.read
       });
@@ -171,7 +171,7 @@ module.exports = async function ioconnection(io, activeUsers, status) {
         });
         /** @todo do i really need to wait on this to finish? */
         await sendPushMessage(user, { friendship_id: messageData.friendship_id, ...message });
-        return callback(null, { msgId: myMsgId, createdAt: message.createdAt });
+        return callback(null, { _id: myMsgId, msgId, createdAt: message.createdAt });
       } catch (error) {
         console.log(error);
         callback(error, null);
