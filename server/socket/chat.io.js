@@ -45,6 +45,7 @@ module.exports = async function ioconnection(io, activeUsers, status) {
       { token, data: friendshipLastMessages },
       callback
       ) {
+        console.log('masCheckin', friendshipLastMessages);
       let user, missedMessages, missedMessagesByChat;
       try {
         user = await User.findByToken(token);
@@ -71,6 +72,9 @@ module.exports = async function ioconnection(io, activeUsers, status) {
         }
         missedMessagesByChat = {};
         if(missedMessages){
+          /** all message will come in a single array so we need to now separate them
+           * back out into chat objects 
+           */
           for (message of missedMessages) {
             if (!(message.friendship_id in missedMessagesByChat)) {
               missedMessagesByChat[message.friendship_id] = [message];
@@ -82,8 +86,9 @@ module.exports = async function ioconnection(io, activeUsers, status) {
         socket.join(user._id);
       } catch (error) {
         console.log(error);
-        callback(error, null);
+        return callback ? callback(error, null): null;
       }
+      console.log('mascheckin', missedMessagesByChat);
       return callback ? callback(null, missedMessagesByChat) : null;
     });
 
