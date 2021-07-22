@@ -162,13 +162,18 @@ module.exports = async function ioconnection(io, activeUsers, status) {
         io.to(messageData.friendship_id).emit('newMessage', {
           token,
           data: {
-            _id: myMsgId,
+            /** we need to send these here because this message can either go to
+             * the receiver or to other device sign in with the senders account
+             * therefore they use it to set the _id which is specific to account
+             */
+            Ids: {senderId: myMsgId, receiverId: theirMsgId},
             ...message,
             friendship_id: messageData.friendship_id,
           },
         });
         /** @todo do i really need to wait on this to finish? */
         await sendPushMessage(user, { friendship_id: messageData.friendship_id, ...message });
+        /** here we can set _id directly because it goes back to the sending device */
         return callback(null, { _id: myMsgId, msgId, createdAt: message.createdAt });
       } catch (error) {
         console.log(error);
