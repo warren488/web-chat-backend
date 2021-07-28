@@ -1,18 +1,18 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const ObjectId = mongoose.Schema.Types.ObjectId;
 /** @namespace */
 let ErrorReportSchema = new mongoose.Schema({
   userId: {
-    type: ObjectId,
+    type: ObjectId
   },
   error: {
-    type: String,
+    type: String
   },
   userAgent: {
-    type: String,
+    type: String
   }
 });
 
-let ErrorReport = mongoose.model('ErrorReport', ErrorReportSchema);
+let ErrorReport = mongoose.model("ErrorReport", ErrorReportSchema);
 
 module.exports = ErrorReport;

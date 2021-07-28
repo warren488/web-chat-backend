@@ -3,15 +3,15 @@
  * @author Warren Scantlebury
  * @namespace User
  */
-const mongoose = require('mongoose');
-const validator = require('validator');
-const jwt = require('jsonwebtoken');
-const uniqueValidator = require('mongoose-unique-validator');
-const { SALT } = require('../config');
-const hash = require('../services/hash');
-const bcrypt = require('bcryptjs');
+const mongoose = require("mongoose");
+const validator = require("validator");
+const jwt = require("jsonwebtoken");
+const uniqueValidator = require("mongoose-unique-validator");
+const { SALT } = require("../config");
+const hash = require("../services/hash");
+const bcrypt = require("bcryptjs");
 const ObjectId = mongoose.Schema.Types.ObjectId;
-const Message = require('./Message');
+const Message = require("./Message");
 
 let userSchema = new mongoose.Schema({
   email: {
@@ -23,82 +23,82 @@ let userSchema = new mongoose.Schema({
     sparse: true,
     validate: {
       validator: validator.isEmail,
-      message: '{VALUE} is not a valid email',
-    },
+      message: "{VALUE} is not a valid email"
+    }
   },
   interactions: {
     receivedRequests: [
       {
         fromId: ObjectId,
-        status: String,
-      },
+        status: String
+      }
     ],
     sentRequests: [
       {
         userId: ObjectId,
-        status: String,
-      },
-    ],
+        status: String
+      }
+    ]
   },
   pushKey: {
     type: String,
     unique: true,
-    sparse: true,
+    sparse: true
   },
   pushEnabled: {
-    type: Boolean,
+    type: Boolean
   },
   username: {
     type: String,
     unique: true,
     index: true,
     required: true,
-    minlength: 4,
+    minlength: 4
   },
   friends: [
     {
       friendId: {
         type: ObjectId,
-        required: true,
+        required: true
       },
       username: {
         type: String,
-        required: true,
+        required: true
       },
       imgUrl: {
-        type: String,
-      },
-    },
+        type: String
+      }
+    }
   ],
   password: {
     type: String,
     required: true,
-    minlength: 7,
+    minlength: 7
   },
   lastOnline: {
-    type: Number,
+    type: Number
   },
   imgUrl: {
-    type: String,
+    type: String
   },
   status: {
-    type: String,
+    type: String
   },
   location: {
-    type: String,
+    type: String
   },
   tokens: [
     {
       access: {
         type: String,
-        required: true,
+        required: true
       },
       token: {
         type: String,
-        required: true,
-      },
-    },
-  ],
+        required: true
+      }
+    }
+  ]
 });
 
 /**
@@ -110,9 +110,9 @@ async function generateAuthToken() {
   let token = jwt.sign({ _id: this._id }, SALT);
   this.tokens = this.tokens.concat([
     {
-      access: 'auth',
-      token,
-    },
+      access: "auth",
+      token
+    }
   ]);
   await this.save();
   return token;
@@ -121,9 +121,9 @@ async function generateAuthToken() {
 async function attachToken(token) {
   this.tokens = this.tokens.concat([
     {
-      access: 'auth',
-      token,
-    },
+      access: "auth",
+      token
+    }
   ]);
   await this.save();
 }
@@ -144,7 +144,7 @@ async function getChat(friendship_id, limit) {
   let chat = await Message.find(
     {
       user_id: this._id,
-      friendship_id: friendship_id,
+      friendship_id: friendship_id
     },
     {},
     { limit, sort: { createdAt: -1 } }
@@ -158,8 +158,8 @@ async function getChatPage(friendship_id, limit, timestamp) {
       user_id: this._id,
       friendship_id: friendship_id,
       createdAt: {
-        $lte: timestamp,
-      },
+        $lte: timestamp
+      }
     },
     {},
     { limit, sort: { createdAt: -1 } }
@@ -171,71 +171,73 @@ async function getLastMessage(friendship_id) {
   let chat = await Message.find(
     {
       user_id: this._id,
-      friendship_id: friendship_id,
+      friendship_id: friendship_id
     },
     {
       _id: 1,
       msgId: 1,
       text: 1,
       from: 1,
-      fromId: 1,
+      fromId: 1
     },
     {
       skip: 0,
       limit: 1,
       sort: {
-        createdAt: -1,
-      },
+        createdAt: -1
+      }
     }
   );
   return chat;
 }
 
 async function recordFriendshipRequest(userId, requestorId) {
-  return User.findByIdAndUpdate(userId, {
-    $addToSet: {
-      'interactions.receivedRequests': [
-        {
-          status: 'pending',
-          fromId: requestorId,
-        },
-      ],
+  return User.findByIdAndUpdate(
+    userId,
+    {
+      $addToSet: {
+        "interactions.receivedRequests": [
+          {
+            status: "pending",
+            fromId: requestorId
+          }
+        ]
+      }
     },
-  },
-  {
-    new: true
-  }
+    {
+      new: true
+    }
   );
 }
 
 async function requestFriend(friendId) {
   if (this.interactions) {
     let receivedRequest = this.interactions.receivedRequests.find(
-      (request) => request.fromId.toString() === friendId
+      request => request.fromId.toString() === friendId
     );
     let sentRequest = this.interactions.sentRequests.find(
-      (request) => request.userId.toString() === friendId
+      request => request.userId.toString() === friendId
     );
     if (!receivedRequest && !sentRequest) {
       this.interactions.sentRequests = [
         // we either spread the current array if it exists or we create a new one
         ...(this.interactions.sentRequests || []),
-        { status: 'pending', userId: friendId },
+        { status: "pending", userId: friendId }
       ];
 
       return Promise.all([
         this.save(),
-        User.recordFriendshipRequest(friendId, this._id),
+        User.recordFriendshipRequest(friendId, this._id)
       ]);
     } else if (receivedRequest) {
       throw {
         userMessage: `pre-exisiting incoming request`,
-        status: receivedRequest.status,
+        status: receivedRequest.status
       };
     } else if (sentRequest) {
       /** @todo do we want users to know if there request has been denied or not for now lets say no */
       throw {
-        userMessage: `friend request already sent`,
+        userMessage: `friend request already sent`
       };
     }
   }
@@ -244,11 +246,14 @@ async function requestFriend(friendId) {
     sentRequests: [
       // we either spread the current array if it exists or we create a new one
       ...(this.interactions.sentRequests || []),
-      { status: 'pending', userId: friendId },
-    ],
+      { status: "pending", userId: friendId }
+    ]
   };
 
-  return Promise.all([this.save(), User.recordFriendshipRequest(friendId, this._id)]);
+  return Promise.all([
+    this.save(),
+    User.recordFriendshipRequest(friendId, this._id)
+  ]);
 }
 
 /**
@@ -258,14 +263,19 @@ async function requestFriend(friendId) {
  * @memberof User
  */
 async function addFriend({ id, username, imgUrl }) {
-  let friend = this.friends.find((friend) => friend.username === username);
+  let friend = this.friends.find(friend => friend.username === username);
   if (friend) {
     return friend;
   }
-  friend = { _id: new mongoose.Types.ObjectId(), friendId: id, username, imgUrl };
+  friend = {
+    _id: new mongoose.Types.ObjectId(),
+    friendId: id,
+    username,
+    imgUrl
+  };
   this.friends = this.friends.concat([friend]);
   this.interactions.receivedRequests = this.interactions.receivedRequests.filter(
-    (request) => request.fromId.toString() !== id.toString()
+    request => request.fromId.toString() !== id.toString()
   );
   await this.save();
   return friend;
@@ -280,14 +290,14 @@ async function addFriend({ id, username, imgUrl }) {
  * @memberof User
  */
 async function reAddFriend({ id, username, friendship_id, imgUrl }) {
-  let friend = this.friends.find((friend) => friend.username === username);
+  let friend = this.friends.find(friend => friend.username === username);
   if (friend) {
     return friend;
   }
   friend = { _id: friendship_id, friendId: id, username, imgUrl };
   this.friends = this.friends.concat([friend]);
   this.interactions.sentRequests = this.interactions.sentRequests.filter(
-    (request) => request.userId.toString() !== id.toString()
+    request => request.userId.toString() !== id.toString()
   );
   await this.save();
   return friend;
@@ -302,7 +312,7 @@ async function reAddFriend({ id, username, friendship_id, imgUrl }) {
  */
 // use array queries instead of looping (faster for smaller data?)
 async function findFriend(val, propertyname) {
-  let friend = this.friends.find((friend) => {
+  let friend = this.friends.find(friend => {
     if (friend) {
       return friend[propertyname].toString() === val;
     }
@@ -333,10 +343,10 @@ async function addMessage(friendship_id, message) {
   // TODO: maybe we only need the status for our message as the user wont see status for messages
   // we sent, in which case the status would be set outside
   const newMessage = new Message({
-    status: 'sent',
+    status: "sent",
     user_id: this._id,
     friendship_id,
-    ...message,
+    ...message
   });
   await newMessage.save();
   return newMessage._id;
@@ -356,7 +366,7 @@ function toJSON() {
     imgUrl: user.imgUrl,
     status: user.status,
     location: user.location,
-    interactions: user.interactions,
+    interactions: user.interactions
   };
 }
 
@@ -370,11 +380,11 @@ async function findByToken(token) {
   let decoded = jwt.verify(token, SALT);
   let user = await User.findOne({
     id: decoded.id,
-    'tokens.token': token,
-    'tokens.access': 'auth',
+    "tokens.token": token,
+    "tokens.access": "auth"
   });
   if (!user) {
-    throw { message: 'user not found' };
+    throw { message: "user not found" };
   }
   return user;
 }
@@ -389,13 +399,13 @@ async function findByToken(token) {
  */
 async function findByCredentials(uniqueId, credentials) {
   let user = await this.findOne({
-    [uniqueId]: credentials[uniqueId],
+    [uniqueId]: credentials[uniqueId]
   });
   if (!user) {
-    throw { message: 'user not found' };
+    throw { message: "user not found" };
   }
   if (!bcrypt.compareSync(credentials.password, user.password)) {
-    throw { message: 'incorrect credentials' };
+    throw { message: "incorrect credentials" };
   }
   return user;
 }
@@ -409,10 +419,10 @@ async function findByCredentials(uniqueId, credentials) {
  */
 async function findByUsername(username) {
   let user = await this.findOne({
-    username,
+    username
   });
   if (!user) {
-    throw { message: 'user not found' };
+    throw { message: "user not found" };
   }
   return user;
 }
@@ -427,14 +437,14 @@ async function findByUsername(username) {
 async function filterByUsername(userId, username) {
   let users = await User.find({
     $text: {
-      $search: username,
+      $search: username
     },
     _id: {
-      $ne: userId,
-    },
+      $ne: userId
+    }
   });
   if (!users) {
-    throw { message: 'user not found' };
+    throw { message: "user not found" };
   }
   return users;
 }
@@ -447,20 +457,20 @@ async function filterByUsername(userId, username) {
 async function removeToken(token) {
   let user = this;
   if (!token) {
-    throw { message: 'no token passed' };
+    throw { message: "no token passed" };
   }
   await user.update({
     $pull: {
       tokens: {
-        token,
-      },
-    },
+        token
+      }
+    }
   });
   await user.save();
 }
 
 async function updateInfo(info) {
-  if ('email' in info && info.email === '') {
+  if ("email" in info && info.email === "") {
     /**
      * email is special because it must be unique, but it is not required so we have to make sure
      * that if a user tries to delete it by sending an empty string we completely remove it if not
@@ -480,26 +490,26 @@ async function updateInfo(info) {
     let updateObject = {};
     for (const friend of this.friends) {
       queryArray.push({
-        _id: friend.friendId,
+        _id: friend.friendId
       });
     }
     if (info.username) {
-      updateObject['friends.$.username'] = info.username;
+      updateObject["friends.$.username"] = info.username;
     }
     if (info.imgUrl) {
-      updateObject['friends.$.imgUrl'] = info.imgUrl;
+      updateObject["friends.$.imgUrl"] = info.imgUrl;
     }
     await User.updateMany(
       {
         $or: queryArray,
         friends: {
           $elemMatch: {
-            friendId: this._id,
-          },
-        },
+            friendId: this._id
+          }
+        }
       },
       {
-        $set: updateObject,
+        $set: updateObject
       }
     );
   }
@@ -507,14 +517,14 @@ async function updateInfo(info) {
 }
 
 const writableProperties = [
-  'username',
-  'password',
-  'email',
-  'lastOnline',
-  'imgUrl',
-  'status',
-  'location',
-  'interactions',
+  "username",
+  "password",
+  "email",
+  "lastOnline",
+  "imgUrl",
+  "status",
+  "location",
+  "interactions"
 ];
 
 userSchema.methods.generateAuthToken = generateAuthToken;
@@ -541,7 +551,7 @@ userSchema.statics.writableProperties = writableProperties;
 userSchema.statics.recordFriendshipRequest = recordFriendshipRequest;
 
 userSchema.pre(
-  'save',
+  "save",
   /**
    * uses the mongoose provided pre save to check for a change in the password and hash it before saving
    * @param {Function} next the next function to allow the save
@@ -551,7 +561,7 @@ userSchema.pre(
     if (user.chats === undefined) {
       user.chats = [];
     }
-    if (user.isModified('password')) {
+    if (user.isModified("password")) {
       user.password = hash(user.password);
       next();
     } else {
@@ -562,5 +572,5 @@ userSchema.pre(
 
 userSchema.plugin(uniqueValidator);
 
-let User = mongoose.model('User', userSchema);
+let User = mongoose.model("User", userSchema);
 module.exports = User;

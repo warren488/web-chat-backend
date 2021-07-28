@@ -19,13 +19,12 @@ const morgan = require("morgan");
 require("./db");
 const app = express();
 
-app.use(bodyParser.json({limit: '10mb', extended: true}));
+app.use(bodyParser.json({ limit: "10mb", extended: true }));
 app.use(cookieParser());
 app.use(cors());
-if(process.env.NODE_ENV !== "production"){
-  app.use(morgan('combined'));
+if (process.env.NODE_ENV !== "production") {
+  app.use(morgan("combined"));
 }
-
 
 const port = process.env.PORT || 3000;
 const server = http.createServer(app);
@@ -37,9 +36,9 @@ attachListeners(io, activeUsers, status);
 
 /** GAME STUFF */
 const available = {
-  top: {free: true, socket: null},
-  bottom: {free: true, socket: null}
-}
+  top: { free: true, socket: null },
+  bottom: { free: true, socket: null }
+};
 attachGameListeners(io, available);
 
 app.use("/api", apiRouter(io));

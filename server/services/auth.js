@@ -1,5 +1,5 @@
-const admin = require('firebase-admin');
-const credCert = require('../config/firebase');
+const admin = require("firebase-admin");
+const credCert = require("../config/firebase");
 
 let credTest = `{
     "type": "${process.env.firebase_type}",
@@ -9,23 +9,19 @@ let credTest = `{
     "client_id": "${process.env.firebase_client_id}",
     "auth_uri": "${process.env.firebase_auth_uri}",
     "token_uri": "${process.env.firebase_token_uri}",
-    "auth_provider_x509_cert_url": "${
-      process.env.firebase_auth_provider_x509_cert_url
-    }",
+    "auth_provider_x509_cert_url": "${process.env.firebase_auth_provider_x509_cert_url}",
     "client_x509_cert_url": "${process.env.firebase_client_x509_cert_url}"
   }`;
 
 let creds = JSON.parse(credTest);
-creds.private_key = process.env.firebase_private_key.replace(/\\n/g, '\n')
+creds.private_key = process.env.firebase_private_key.replace(/\\n/g, "\n");
 
 admin.initializeApp({
-  credential: admin.credential.cert(creds),
+  credential: admin.credential.cert(creds)
 });
 
 module.exports = {
   createCustomToken(uid) {
-    return admin
-      .auth()
-      .createCustomToken(uid)
-  },
+    return admin.auth().createCustomToken(uid);
+  }
 };

@@ -4,63 +4,63 @@ const ObjectId = mongoose.Schema.Types.ObjectId;
 let MessageSchema = new mongoose.Schema({
   msgId: {
     type: ObjectId,
-    required: true,
+    required: true
   },
   linkPreview: {
     title: String,
     image: String,
     description: String,
-    id: String,
+    id: String
   },
   text: {
-    type: String,
+    type: String
   },
   type: {
-    type: String,
+    type: String
   },
   media: {
-    type: String,
+    type: String
   },
   meta: {
     height: { type: Number },
     width: { type: Number },
-    length: { type: Number },
+    length: { type: Number }
   },
   url: {
-    type: String,
+    type: String
   },
   createdAt: {
     type: Number,
     required: true,
-    index: true,
+    index: true
   },
   from: {
     type: String,
-    required: true,
+    required: true
   },
   quoted: {
     type: this,
-    required: false,
+    required: false
   },
   status: {
     type: String,
-    required: false,
+    required: false
   },
   friendship_id: {
     type: ObjectId,
     required: true,
-    index: true,
+    index: true
   },
   user_id: {
     type: ObjectId,
     required: true,
-    index: true,
+    index: true
   },
   fromId: {
     type: ObjectId,
     required: true,
-    index: true,
-  },
+    index: true
+  }
 });
 
 async function markAsReceived({ friendship_id, range, fromId, read }) {
@@ -68,20 +68,20 @@ async function markAsReceived({ friendship_id, range, fromId, read }) {
     {
       friendship_id,
       fromId: {
-        $ne: fromId,
+        $ne: fromId
       },
       status: {
         $ne: "read"
       },
       createdAt: {
         $gte: range[0],
-        $lte: range[1],
-      },
+        $lte: range[1]
+      }
     },
     {
       $set: {
-        status: read ? "read" : "received",
-      },
+        status: read ? "read" : "received"
+      }
     }
   );
 }

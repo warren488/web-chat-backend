@@ -1,21 +1,24 @@
-const webpush = require('web-push');
-let User = require('../models/User');
+const webpush = require("web-push");
+let User = require("../models/User");
 
-async function sendPushMessage(user, { friendship_id, text, media, createdAt }) {
+async function sendPushMessage(
+  user,
+  { friendship_id, text, media, createdAt }
+) {
   const receiver = await User.findOne(
     {
       friends: {
         $elemMatch: {
           _id: friendship_id,
-          friendId: user._id,
-        },
-      },
+          friendId: user._id
+        }
+      }
     },
     { pushKey: 1, pushEnabled: 1 }
   );
   if (receiver.pushEnabled) {
     webpush.setVapidDetails(
-      'mailto:test@test.com',
+      "mailto:test@test.com",
       process.env.vapidPub,
       process.env.vapidPriv
     );
@@ -34,5 +37,5 @@ async function sendPushMessage(user, { friendship_id, text, media, createdAt }) 
 }
 
 module.exports = {
-  sendPushMessage,
+  sendPushMessage
 };

@@ -3,26 +3,26 @@ const ObjectId = mongoose.Schema.Types.ObjectId;
 /** @namespace */
 let EventSchema = new mongoose.Schema({
   type: {
-    type: String,
+    type: String
   },
   seen: {
     type: Boolean,
     required: true,
-    default: false,
+    default: false
   },
   createdAt: {
     type: Number,
     required: true,
-    index: true,
+    index: true
   },
   user_id: {
     type: ObjectId,
     required: true,
-    index: true,
+    index: true
   },
   meta_reference: {
-    type: Array,
-  },
+    type: Array
+  }
 });
 
 async function clearAllNotifs(user_id, timestamp) {
@@ -30,13 +30,13 @@ async function clearAllNotifs(user_id, timestamp) {
     {
       user_id,
       createdAt: {
-        $lte: timestamp,
-      },
+        $lte: timestamp
+      }
     },
     {
       $set: {
-        seen: true,
-      },
+        seen: true
+      }
     }
   );
 }
@@ -45,14 +45,14 @@ async function clearAllNotifsOfType({ user_id, timestamp, type }) {
     {
       user_id,
       createdAt: {
-        $lte: timestamp,
+        $lte: timestamp
       },
-      type,
+      type
     },
     {
       $set: {
-        seen: true,
-      },
+        seen: true
+      }
     }
   );
 }
