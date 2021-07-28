@@ -2,7 +2,7 @@ let router = require('express').Router();
 let {
   generateUserFirebaseToken,
   sendFriendRequest,
-  getUser,
+  searchUser,
   getUsers,
   getMe,
   login,
@@ -55,7 +55,7 @@ module.exports = function (io) {
     authenticate,
     getLastMessage
   );
-  router.get('/users/:username', getUser);
+  router.get('/users/:username', searchUser);
   router.post('/users/:username/unsubscribe', authenticate, disablePush);
   router.post('/users/:username/subscribe', authenticate, subScribeToPush);
   router.post('/getpreview', authenticate, previewLink);

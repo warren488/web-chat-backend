@@ -31,6 +31,7 @@
     "mongoose": "^5.4.3",
     "mongoose-unique-validator": "^2.0.3",
     "morgan": "^1.10.0",
+    "nodemon": "^2.0.12",
     "socket.io": "^2.2.0",
     "validator": "^10.10.0",
     "web-push": "^3.4.4"

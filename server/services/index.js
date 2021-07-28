@@ -282,7 +282,7 @@ async function getFriends(req, res) {
   return res.status(200).send(myFriendShips);
 }
 
-async function getUser(req, res) {
+async function searchUser(req, res) {
   try {
     let user = await User.findByUsername(req.params.username);
     if (req.query.exists) {
@@ -534,5 +534,5 @@ module.exports = {
   getUserNotifications,
   addFriend,
   clearNotifType,
-  getUser,
+  searchUser,
 };
