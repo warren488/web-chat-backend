@@ -210,6 +210,7 @@ async function recordFriendshipRequest(userId, requestorId) {
 
 async function requestFriend(friendId) {
   if (this.interactions) {
+    /** check if we have already received or sent a request to this person */
     let receivedRequest = this.interactions.receivedRequests.find(
       (request) => request.fromId.toString() === friendId
     );
@@ -242,8 +243,6 @@ async function requestFriend(friendId) {
 
   this.interactions = {
     sentRequests: [
-      // we either spread the current array if it exists or we create a new one
-      ...(this.interactions.sentRequests || []),
       { status: 'pending', userId: friendId },
     ],
   };
@@ -257,29 +256,60 @@ async function requestFriend(friendId) {
  * @param {String} username username of the friend we want to add
  * @memberof User
  */
-async function addFriend({ id, username, imgUrl }) {
-  let friend = this.friends.find((friend) => friend.username === username);
-  if (friend) {
-    return friend;
+async function addFriend({ id, username, imgUrl }, { session }) {
+  /** we may want this method as well as others to be part of a transaction so we
+   * allow a session to be passed in
+   */
+  const session = session || (await mongoose.startSession());
+  try {
+    // Start a transaction
+    session.startTransaction();
+
+    let friend = this.friends.find((friend) => friend.friendId === id);
+    if (friend) {
+      return friend;
+    }
+    friend = {
+      _id: new mongoose.Types.ObjectId(),
+      friendId: id,
+      username,
+      imgUrl,
+    };
+    this.friends = this.friends.concat([friend]);
+    this.interactions.receivedRequests =
+      this.interactions.receivedRequests.filter(
+        (request) => request.fromId.toString() !== id.toString()
+      );
+    await this.save({ session });
+    let friendsFriendshipData = await friend.reAddFriend(
+      {
+        ...req.user.toJSON(),
+        friendship_id: newFriendshipData._id,
+      },
+      { session }
+    );
+
+    // Once the transaction is committed, the write operation becomes
+    // visible outside of the transaction.
+    await session.commitTransaction();
+    return { newFriendshipData, friendsFriendshipData };
+  } catch (error) {
+    await session.abortTransaction();
   }
-  friend = { _id: new mongoose.Types.ObjectId(), friendId: id, username, imgUrl };
-  this.friends = this.friends.concat([friend]);
-  this.interactions.receivedRequests = this.interactions.receivedRequests.filter(
-    (request) => request.fromId.toString() !== id.toString()
-  );
-  await this.save();
-  return friend;
 }
 
 /**
  * This function is used when we add a friend for a user and have updated their friendslists
- * we now want to update the friendslist of their new friend with out pre generated friendship id
+ * we now want to update the friendslist of their new friend with our pre generated friendship id
  * @param {String} id ID of the friend we are adding
  * @param {String} username username of the friend we are adding
  * @param {String} friendship_id friendship ID that will identify the friendship (same for both users)
  * @memberof User
  */
-async function reAddFriend({ id, username, friendship_id, imgUrl }) {
+async function reAddFriend(
+  { id, username, friendship_id, imgUrl },
+  { session }
+) {
   let friend = this.friends.find((friend) => friend.username === username);
   if (friend) {
     return friend;
@@ -289,7 +319,10 @@ async function reAddFriend({ id, username, friendship_id, imgUrl }) {
   this.interactions.sentRequests = this.interactions.sentRequests.filter(
     (request) => request.userId.toString() !== id.toString()
   );
-  await this.save();
+  /** I can rely solely on another session because this is SUPPOSED to only be used
+   * by other methods and the changes are supposed to atomic
+   */
+  await this.save({ session });
   return friend;
 }
 
