@@ -3,7 +3,7 @@ let {
   generateUserFirebaseToken,
   sendFriendRequest,
   searchUser,
-  getUsers,
+  getUsersRequestHandler,
   getMe,
   login,
   updateInfo,
@@ -30,7 +30,7 @@ module.exports = function(io) {
   router.post("/login", login);
   router.post("/logout", authenticate, logout);
   router.post("/signup", createUser);
-  router.get("/users", authenticate, getUsers);
+  router.get("/users", authenticate, getUsersRequestHandler);
   router.get("/users/me", authenticate, getMe);
   router.post("/users/me", authenticate, updateInfo);
   router.post("/users/me/friendRequests", authenticate, sendFriendRequest(io));
@@ -55,7 +55,7 @@ module.exports = function(io) {
     authenticate,
     getLastMessage
   );
-  router.get("/users/:username", searchUser);
+  router.get("/user_exists", searchUser);
   router.post("/users/:username/unsubscribe", authenticate, disablePush);
   router.post("/users/:username/subscribe", authenticate, subScribeToPush);
   router.post("/getpreview", authenticate, previewLink);

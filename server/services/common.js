@@ -1,4 +1,5 @@
 const webpush = require("web-push");
+const { mapExisting } = require("../../utils");
 let User = require("../models/User");
 
 async function sendPushMessage(
@@ -36,6 +37,40 @@ async function sendPushMessage(
   }
 }
 
+async function getUsers(query) {
+  try {
+    const usernameSearch = {};
+    if (!query.exact && query.username) {
+      usernameSearch.$text = {
+        $search: query.username
+      };
+      delete query.username;
+    }
+    console.log(query);
+    console.log(
+      mapExisting({
+        ...usernameSearch,
+        ...query
+      })
+    );
+    const users = await User.find(
+      mapExisting({
+        ...usernameSearch,
+        ...query
+      })
+    );
+    if (!users) {
+      throw { message: "user not found" };
+    } else {
+      return users;
+    }
+  } catch (e) {
+    console.log(e);
+    throw { message: "error searching for user" };
+  }
+}
+
 module.exports = {
-  sendPushMessage
+  sendPushMessage,
+  getUsers
 };

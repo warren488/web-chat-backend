@@ -10,6 +10,7 @@ const bcrypt = require("bcryptjs");
 const auth = require("./auth");
 const https = require("https");
 const cheerio = require("cheerio");
+const { getUsers } = require("./common");
 
 async function revokeAllTokens(req, res) {
   await req.user.revokeAllTokens();
@@ -72,10 +73,28 @@ async function updateInfo(req, res) {
   }
 }
 
-async function getUsers(req, res) {
-  const users = await User.filterByUsername(req.user._id, req.query.username);
-
-  return res.status(200).send(users);
+async function getUsersRequestHandler(req, res) {
+  try {
+    const { username, user_id, exclude_me, exists } = req.query;
+    const userQuery = { username };
+    if (exclude_me) {
+      userQuery._id = { $ne: req.user._id, $eq: user_id };
+    } else {
+      userQuery._id = user_id;
+    }
+    const users = await getUsers(userQuery);
+    if (exists) {
+      return res.status(200).send({ exists: true });
+    }
+    console.log(users);
+    return res.status(200).send(users);
+  } catch (e) {
+    console.log(e);
+    if (e.message === "user not found") {
+      return res.status(200).send({ exists: false });
+    }
+    res.status(500).send({ message: "error searching for user" });
+  }
 }
 
 async function subScribeToPush(req, res) {
@@ -284,11 +303,8 @@ async function getFriends(req, res) {
 
 async function searchUser(req, res) {
   try {
-    let user = await User.findByUsername(req.params.username);
-    if (req.query.exists) {
-      return res.status(200).send({ exists: true });
-    }
-    res.status(200).send(user);
+    let user = await User.findByUsername(req.query.username);
+    return res.status(200).send({ exists: true });
   } catch (e) {
     console.log(e);
     if (e.message === "user not found") {
@@ -521,11 +537,10 @@ module.exports = {
   logout,
   getMe,
   sweep,
-  getUsers,
+  getUsersRequestHandler,
   previewLink,
   emojis,
   disablePush,
-  logout,
   sendFriendRequest,
   updateInfo,
   authenticate,
