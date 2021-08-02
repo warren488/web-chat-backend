@@ -152,10 +152,11 @@ async function getChat(friendship_id, limit) {
   return chat;
 }
 
-async function getChatPage(friendship_id, limit, timestamp) {
+async function getChatPage({friendship_id, limit, timestamp, msgId}) {
   let chat = await Message.find(
     {
       user_id: this._id,
+      msgId: { $ne: msgId },
       friendship_id: friendship_id,
       createdAt: {
         $lte: timestamp

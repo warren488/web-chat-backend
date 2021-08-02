@@ -45,7 +45,6 @@ module.exports = async function ioconnection(io, activeUsers, status) {
       { token, data: friendshipLastMessages },
       callback
     ) {
-      console.log("masCheckin", friendshipLastMessages);
       let user, missedMessages, missedMessagesByChat;
       try {
         user = await User.findByToken(token);
@@ -88,7 +87,6 @@ module.exports = async function ioconnection(io, activeUsers, status) {
         console.log(error);
         return callback ? callback(error, null) : null;
       }
-      console.log("mascheckin", missedMessagesByChat);
       return callback ? callback(null, missedMessagesByChat) : null;
     });
 

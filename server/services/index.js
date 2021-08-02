@@ -404,9 +404,12 @@ async function getChatPage(req, res) {
     });
   }
   let currentChat = (await req.user.getChatPage(
-    req.params.friendship_id,
-    parseInt(req.query.limit),
-    parseInt(req.query.timestamp)
+    {
+      friendship_id: req.params.friendship_id,
+      limit: parseInt(req.query.limit),
+      timestamp: parseInt(req.query.timestamp),
+      msgId: req.query.msgId
+    }
   )).reverse();
   return res.status(200).send(currentChat);
 }
