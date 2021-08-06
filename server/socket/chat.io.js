@@ -142,9 +142,12 @@ module.exports = async function ioconnection(io, activeUsers, status) {
           message.linkPreview = messageData.linkPreview;
         }
         if (messageData.hID) {
+          /** maybe i can get the _id of the message here so we can potentially
+           * speed up the query
+           */
           let quoted = await Message.findOne({
             msgId: messageData.hID,
-            user_id: user._id
+            user_id: user._id,
           });
           if (quoted) {
             message.quoted = quoted;

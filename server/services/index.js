@@ -207,38 +207,20 @@ function addFriend(io) {
         };
       }
       let friend = await User.findOne({
-        username: req.body.username
+        _id: req.body.id,
       });
       if (!friend) {
         throw { message: "user not found" };
       }
-      if (
-        req.body.id &&
-        !hasRequestFrom(req.user, { _id: friend._id.toString() })
-      ) {
-        throw {
-          message:
-            "you cannot add a user without first receiving a request from them"
-        };
-      }
 
-      let newFriendshipData = await req.user.addFriend(friend);
-      /** mongo does some fancy magic with their object that causes them not to quite behave regularly */
+      let {myFriendshipData, friendsFriendshipData} = await req.user.addFriend(friend);
 
-      /** these custom functions also save the document hence i dont need to save friend */
-      let [friendsFriendshipData] = await Promise.all([
-        friend.reAddFriend({
-          ...req.user.toJSON(),
-          friendship_id: newFriendshipData._id
-        }),
-        req.user.save()
-      ]);
       io.to(friend._id.toString()).emit("newFriend", {
         requestAccepted: true,
         friendshipData: friendsFriendshipData
       });
       io.to(req.user._id).emit("newFriend", {
-        friendshipData: newFriendshipData
+        friendshipData: myFriendshipData
       });
       res.status(200).send({ message: "friend successfully added" });
     } catch (err) {
