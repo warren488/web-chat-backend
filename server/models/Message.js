@@ -10,7 +10,8 @@ let MessageSchema = new mongoose.Schema({
     title: String,
     image: String,
     description: String,
-    id: String
+    id: String,
+    url: String
   },
   text: {
     type: String
