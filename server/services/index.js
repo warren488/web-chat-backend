@@ -35,7 +35,7 @@ async function createUser(req, res) {
     let user = new User({
       ...req.body,
       chats: [],
-      interactions: { receivedRequests: [], sentRequests: [] }
+      interactions: { receivedRequests: [], sentRequests: [] },
     });
 
     let token = await user.generateAuthToken();
@@ -57,7 +57,7 @@ async function updateInfo(req, res) {
       !bcrypt.compareSync(req.body.currentPassword, req.user.password)
     ) {
       return res.status(401).send({
-        message: "must provide current valid password in order to change info"
+        message: "must provide current valid password in order to change info",
       });
     }
     if (req.body.newPassword) {
@@ -188,7 +188,7 @@ async function HTMLauthenticate(req, res, next) {
 async function hasRequestFrom(user1, user2) {
   if (user1.interactions) {
     let result = user1.interactions.receivedRequests.find(
-      request => user2._id === request.fromId.toString()
+      (request) => user2._id === request.fromId.toString()
     );
     return !!result;
   }
@@ -196,14 +196,14 @@ async function hasRequestFrom(user1, user2) {
 }
 
 function addFriend(io) {
-  return async function(req, res) {
+  return async function (req, res) {
     try {
       /** we need to check if we have a request from the user that is the ONLY way we have a right to add them as a friend */
       /** we do this here and again later to try to avoid any unecessary trips to DB */
       if (req.body.id && !hasRequestFrom(req.user, { _id: req.body.id })) {
         throw {
           message:
-            "you cannot add a user without first receiving a request from them"
+            "you cannot add a user without first receiving a request from them",
         };
       }
       let friend = await User.findOne({
@@ -213,14 +213,15 @@ function addFriend(io) {
         throw { message: "user not found" };
       }
 
-      let {myFriendshipData, friendsFriendshipData} = await req.user.addFriend(friend);
+      let { myFriendshipData, friendsFriendshipData } =
+        await req.user.addFriend(friend);
 
       io.to(friend._id.toString()).emit("newFriend", {
         requestAccepted: true,
-        friendshipData: friendsFriendshipData
+        friendshipData: friendsFriendshipData,
       });
       io.to(req.user._id).emit("newFriend", {
-        friendshipData: myFriendshipData
+        friendshipData: myFriendshipData,
       });
       res.status(200).send({ message: "friend successfully added" });
     } catch (err) {
@@ -231,7 +232,7 @@ function addFriend(io) {
 }
 
 function sendFriendRequest(io) {
-  return async function(req, res) {
+  return async function (req, res) {
     let requestRecipient;
     try {
       [, requestRecipient] = await req.user.requestFriend(req.body.friendId);
@@ -242,7 +243,7 @@ function sendFriendRequest(io) {
     }
 
     const sentRequest = requestRecipient.interactions.receivedRequests.find(
-      friendRequest =>
+      (friendRequest) =>
         friendRequest.fromId.toString() === req.user._id.toString()
     );
     /** below we add the event to the db to serve us later on when the user reloads the page but for right now the
@@ -256,8 +257,8 @@ function sendFriendRequest(io) {
       createdAt: Date.now(),
       user_id: req.body.friendId,
       meta_reference: {
-        _id: sentRequest._id
-      }
+        _id: sentRequest._id,
+      },
     });
     /** do i really want to fail if we dont store this event */
     await event.save();
@@ -265,7 +266,7 @@ function sendFriendRequest(io) {
       username: req.user.username,
       eventData: { ...event },
       createdAt: Date.now(),
-      ...sentRequest
+      ...sentRequest,
     });
 
     res.status(200).send({ message: "friend requested" });
@@ -300,10 +301,10 @@ async function getUserNotifications(req, res) {
   try {
     let events = await Event.find({
       user_id: req.user.id,
-      seen: false
+      seen: false,
     });
     splitEvents = {};
-    events.forEach(event => {
+    events.forEach((event) => {
       if (!splitEvents[event.type]) {
         splitEvents[event.type] = [];
       }
@@ -330,12 +331,12 @@ async function getMe(req, res) {
       let filteredRequests = req.user.interactions.receivedRequests.reduce(
         (accumulator, request) => {
           if (request.status !== "denied") {
-            requestedUsers.forEach(user => {
+            requestedUsers.forEach((user) => {
               if (user._id.toString() === request.fromId.toString()) {
                 accumulator.push({
                   ...user.toJSON(),
                   acceptanceStatus: request.status,
-                  fromId: request.fromId
+                  fromId: request.fromId,
                 });
               }
             });
@@ -348,8 +349,8 @@ async function getMe(req, res) {
         ...req.user.toJSON(),
         interactions: {
           sentRequests: req.user.interactions.sentRequests,
-          receivedRequests: filteredRequests
-        }
+          receivedRequests: filteredRequests,
+        },
       });
     }
   }
@@ -366,12 +367,11 @@ async function getMessages(req, res) {
   try {
     let {
       params: { friendship_id },
-      query: { limit }
+      query: { limit },
     } = req;
-    let currentChat = (await req.user.getChat(
-      friendship_id,
-      parseInt(limit)
-    )).reverse();
+    let currentChat = (
+      await req.user.getChat(friendship_id, parseInt(limit))
+    ).reverse();
     res.status(200).send(currentChat);
   } catch (e) {
     res.status(500).send({ message: "error retrieving messages" });
@@ -382,26 +382,26 @@ async function getChatPage(req, res) {
   if (!req.query.limit || !req.query.timestamp) {
     res.status(400).send({
       message:
-        "please remember that both the limit and timestamp qparams must be present"
+        "please remember that both the limit and timestamp qparams must be present",
     });
   }
-  let currentChat = (await req.user.getChatPage(
-    {
+  let currentChat = (
+    await req.user.getChatPage({
       friendship_id: req.params.friendship_id,
       limit: parseInt(req.query.limit),
       timestamp: parseInt(req.query.timestamp),
-      msgId: req.query.msgId
-    }
-  )).reverse();
+      msgId: req.query.msgId,
+    })
+  ).reverse();
   return res.status(200).send(currentChat);
 }
 
-const getPromise = url => {
+const getPromise = (url) => {
   return new Promise((resolve, reject) => {
     https
-      .get(url, resp => {
+      .get(url, (resp) => {
         let data = "";
-        resp.on("data", chunk => {
+        resp.on("data", (chunk) => {
           data += chunk;
         });
         resp.on("end", () => {
@@ -417,7 +417,7 @@ async function previewLink(req, res) {
   try {
     const html = await getPromise(req.body.url);
     const $ = cheerio.load(html);
-    const getMetaRag = name => {
+    const getMetaRag = (name) => {
       return (
         $(`meta[name=${name}]`).attr("content") ||
         $(`meta[name="og:${name}"]`).attr("content") ||
@@ -433,7 +433,7 @@ async function previewLink(req, res) {
       image: getMetaRag("image"),
       description: getMetaRag("description"),
       url: req.body.url,
-      id: req.body.id
+      id: req.body.id,
     };
     return res.status(200).send(data);
   } catch (e) {
@@ -468,14 +468,14 @@ function sweep(io) {
         friendship_id,
         range,
         fromId: req.user._id,
-        read
+        read,
       });
       res.status(200).send({ message: "success" });
       io.to(friendship_id).emit("sweep", {
         range,
         friendship_id,
         fromId: req.user._id,
-        read
+        read,
       });
       return;
     } catch (e) {
@@ -533,5 +533,5 @@ module.exports = {
   getUserNotifications,
   addFriend,
   clearNotifType,
-  searchUser
+  searchUser,
 };
