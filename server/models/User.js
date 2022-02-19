@@ -192,7 +192,8 @@ async function getLastMessage(friendship_id) {
   return chat;
 }
 
-async function recordFriendshipRequest(userId, requestorId) {
+async function recordFriendshipRequest({userId, requestorId, session}) {
+  
   return User.findByIdAndUpdate(
     userId,
     {
@@ -206,12 +207,14 @@ async function recordFriendshipRequest(userId, requestorId) {
       }
     },
     {
-      new: true
+      new: true,
+      session
     }
   );
 }
 
-async function requestFriend(friendId) {
+async function requestFriend(friendId, { session } = {}) {
+  session = session || (await mongoose.startSession());
   if (this.interactions) {
     /** check if we have already received or sent a request to this person */
     let receivedRequest = this.interactions.receivedRequests.find(
@@ -220,17 +223,19 @@ async function requestFriend(friendId) {
     let sentRequest = this.interactions.sentRequests.find(
       request => request.userId.toString() === friendId
     );
-    if (!receivedRequest && !sentRequest) {
+    if (true || !receivedRequest && !sentRequest) {
       this.interactions.sentRequests = [
         // we either spread the current array if it exists or we create a new one
         ...(this.interactions.sentRequests || []),
         { status: "pending", userId: friendId }
       ];
 
+      console.log('here');
       return Promise.all([
-        this.save(),
-        User.recordFriendshipRequest(friendId, this._id)
+        this.save({ session }),
+        User.recordFriendshipRequest({userId: friendId, requestorId: this._id, session})
       ]);
+      console.log('here');
     } else if (receivedRequest) {
       throw {
         userMessage: `pre-exisiting incoming request`,
@@ -252,7 +257,7 @@ async function requestFriend(friendId) {
 
   return Promise.all([
     this.save(),
-    User.recordFriendshipRequest(friendId, this._id)
+    User.recordFriendshipRequest({userId: friendId, requestorId: this._id})
   ]);
 }
 

@@ -2,9 +2,33 @@ const webpush = require("web-push");
 const { mapExisting } = require("../../utils");
 let User = require("../models/User");
 
+async function sendPushNotification({ user, payload }) {
+
+  if (user.pushEnabled && user.pushKey) {
+    webpush.setVapidDetails(
+      "mailto:test@test.com",
+      process.env.vapidPub,
+      process.env.vapidPriv
+    );
+    webpush
+      .sendNotification(JSON.parse(user.pushKey), payload)
+      .catch(console.log);
+
+  }
+}
+
+async function sendPushFriendRequest({ recipient, from }) {
+  const receiver = await User.findById(recipient._id)
+  const payload = JSON.stringify({
+    request: true,
+    title: "New friend request",
+    text: `from ${from.username}`
+  })
+  return sendPushNotification({ user: receiver, payload })
+}
 async function sendPushMessage(
   user,
-  { friendship_id, text, media, createdAt }
+  { friendship_id, text, media, createdAt, type }
 ) {
   const receiver = await User.findOne(
     {
@@ -17,24 +41,13 @@ async function sendPushMessage(
     },
     { pushKey: 1, pushEnabled: 1 }
   );
-  if (receiver.pushEnabled) {
-    webpush.setVapidDetails(
-      "mailto:test@test.com",
-      process.env.vapidPub,
-      process.env.vapidPriv
-    );
-    const payload = JSON.stringify({
-      title: `${user.username}`,
-      text: media ? `new ${media}` : text,
-      friendship_id,
-      createdAt
-    });
-    if (receiver.pushKey) {
-      webpush
-        .sendNotification(JSON.parse(receiver.pushKey), payload)
-        .catch(console.log);
-    }
-  }
+  const payload = JSON.stringify({
+    title: `${user.username}`,
+    text: media ? `new ${media}` : text,
+    friendship_id,
+    createdAt
+  });
+  return sendPushNotification({ user: receiver, payload })
 }
 
 async function getUsers(query) {
@@ -72,5 +85,6 @@ async function getUsers(query) {
 
 module.exports = {
   sendPushMessage,
+  sendPushFriendRequest,
   getUsers
 };

@@ -6,11 +6,12 @@ let ErrorReport = require("../models/ErrorReport");
 const { errorToMessage } = require("./error");
 // get our emojis to export through services
 const emojis = require("./emoji");
+const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const auth = require("./auth");
 const https = require("https");
 const cheerio = require("cheerio");
-const { getUsers } = require("./common");
+const { getUsers, sendPushFriendRequest } = require("./common");
 
 async function revokeAllTokens(req, res) {
   await req.user.revokeAllTokens();
@@ -231,11 +232,14 @@ function addFriend(io) {
   };
 }
 
-function sendFriendRequest(io) {
+function sendFriendRequest(io, sess) {
   return async function (req, res) {
-    let requestRecipient;
+    let requestRecipient, session;
     try {
-      [, requestRecipient] = await req.user.requestFriend(req.body.friendId);
+      session = sess || (await mongoose.startSession());
+      await session.startTransaction();
+      [user, requestRecipient] = await req.user.requestFriend(req.body.friendId, { session });
+      console.log('here2');
     } catch (error) {
       console.log(error);
       let message = errorToMessage(error);
@@ -261,15 +265,20 @@ function sendFriendRequest(io) {
       },
     });
     /** do i really want to fail if we dont store this event */
-    await event.save();
+    console.log('here3');
+    await event.save({ session });
+    await session.commitTransaction();
+    await session.endSession();
     io.to(req.body.friendId).emit("newFriendRequest", {
       username: req.user.username,
-      eventData: { ...event },
+      eventData: event.toJSON(),
       createdAt: Date.now(),
-      ...sentRequest,
+      ...sentRequest.toJSON(),
     });
+    console.log('here4');
+    sendPushFriendRequest({ recipient: { _id: req.body.friendId }, from: req.user })
 
-    res.status(200).send({ message: "friend requested" });
+    res.status(200).send({ message: "friend requested", interactions: user.interactions });
   };
 }
 
