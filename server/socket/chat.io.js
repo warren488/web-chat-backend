@@ -108,6 +108,19 @@ module.exports = async function ioconnection(io, activeUsers, status) {
       });
     });
 
+    socket.on("watchVidRequest", async function gotMessage({token, data}, cb) {
+      console.log(data);
+      io.to(data.friendship_id).emit("watchVidRequest", data)
+    });
+    socket.on("pauseVideo", async function gotMessage({token, data}, cb) {
+      console.log(data);
+      io.to(data.friendship_id).emit("pauseVideo", data)
+    });
+    socket.on("playVideo", async function gotMessage({token, data}, cb) {
+      console.log(data);
+      io.to(data.friendship_id).emit("playVideo", data)
+    });
+
     socket.on("sendMessage", async function sendMessage(
       { token, data: messageData },
       callback
