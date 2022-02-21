@@ -112,6 +112,10 @@ module.exports = async function ioconnection(io, activeUsers, status) {
       console.log(data);
       io.to(data.friendship_id).emit("watchVidRequest", data)
     });
+    socket.on("acceptWatchRequest", async function gotMessage({token, data}, cb) {
+      console.log(data);
+      io.to(data.friendship_id).emit("acceptedWatchRequest", data)
+    });
     socket.on("pauseVideo", async function gotMessage({token, data}, cb) {
       console.log(data);
       io.to(data.friendship_id).emit("pauseVideo", data)
