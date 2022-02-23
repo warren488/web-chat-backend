@@ -292,7 +292,7 @@ async function getFriends(req, res) {
   }
   myFriendShips.sort((friendshipA, friendshipB) => {
     console.log(friendshipA, friendshipB);
-    return friendshipB.lastMessage[0].createdAt - friendshipA.lastMessage[0].createdAt 
+    return (friendshipB.lastMessage[0]?.createdAt || 0) - (friendshipA.lastMessage[0]?.createdAt || 0) 
   })
   console.log(myFriendShips.lastMessage);
   return res.status(200).send(myFriendShips);
