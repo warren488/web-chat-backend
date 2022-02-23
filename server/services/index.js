@@ -290,6 +290,11 @@ async function getFriends(req, res) {
     );
     myFriendShips[index].lastMessage = Array.from(lastMessage);
   }
+  myFriendShips.sort((friendshipA, friendshipB) => {
+    console.log(friendshipA, friendshipB);
+    return friendshipB.lastMessage[0].createdAt - friendshipA.lastMessage[0].createdAt 
+  })
+  console.log(myFriendShips.lastMessage);
   return res.status(200).send(myFriendShips);
 }
 
