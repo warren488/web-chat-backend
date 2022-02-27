@@ -12,6 +12,7 @@ const auth = require("./auth");
 const https = require("https");
 const cheerio = require("cheerio");
 const { getUsers, sendPushFriendRequest } = require("./common");
+const Playlist = require("../models/Playlist");
 
 async function revokeAllTokens(req, res) {
   await req.user.revokeAllTokens();
@@ -292,13 +293,13 @@ async function getFriends(req, res) {
   }
   myFriendShips.sort((friendshipA, friendshipB) => {
     console.log(friendshipA, friendshipB);
-    if(!friendshipB.lastMessage[0]){
+    if (!friendshipB.lastMessage[0]) {
       return -1
     }
-    if(!friendshipA.lastMessage[0]){
+    if (!friendshipA.lastMessage[0]) {
       return 1
     }
-    return (friendshipB.lastMessage[0].createdAt || 0) - (friendshipA.lastMessage[0].createdAt || 0) 
+    return (friendshipB.lastMessage[0].createdAt || 0) - (friendshipA.lastMessage[0].createdAt || 0)
   })
   console.log(myFriendShips.lastMessage);
   return res.status(200).send(myFriendShips);
@@ -414,6 +415,16 @@ async function getChatPage(req, res) {
     })
   ).reverse();
   return res.status(200).send(currentChat);
+}
+
+async function createPlaylist({ userId, user, list, session }) {
+  if (!user) {
+    user = await User.findById(userId)
+  }
+  let playlist = new Playlist({...list, createdBy: user._id});
+  await user.addAccessToPlaylist({ id: playlist._id, session })
+  await playlist.save({ session })
+  return playlist;
 }
 
 const getPromise = (url) => {
@@ -554,4 +565,5 @@ module.exports = {
   addFriend,
   clearNotifType,
   searchUser,
+  createPlaylist,
 };

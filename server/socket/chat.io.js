@@ -2,6 +2,8 @@ let User = require("../models/User");
 let Message = require("../models/Message");
 const mongoose = require("mongoose");
 const { sendPushMessage } = require("../services/common");
+const Playlist = require("../models/Playlist");
+const { createPlaylist } = require("../services");
 
 module.exports = async function ioconnection(io, activeUsers, status) {
   if (status.attached) {
@@ -108,19 +110,80 @@ module.exports = async function ioconnection(io, activeUsers, status) {
       });
     });
 
-    socket.on("watchVidRequest", async function gotMessage({token, data}, cb) {
+    socket.on("watchVidRequest", async function watchVidRequest({ token, data }, cb) {
       console.log(data);
       io.to(data.friendship_id).emit("watchVidRequest", data)
     });
-    socket.on("acceptWatchRequest", async function gotMessage({token, data}, cb) {
+    socket.on("getPlaylists", async function getPlaylists({ token }, cb) {
+      let user = await User.findByToken(token)
+      if (!user || !user.playlists || user.playlists.length === 0) {
+        cb(null, [])
+      }
+      let playlists = await Playlist.getPlaylists(user.playlists)
+      console.log(playlists);
+      cb(null, playlists)
+    })
+    socket.on("addVideoToPlaylist", async function addVideoToPlaylist({ token, data }, cb) {
+      try {
+        console.log(data);
+        let playlist = await Playlist.addVidToPlaylist(data)
+        return cb(null, playlist)
+      } catch (error) {
+        console.log(error);
+        cb(error)
+      }
+    })
+    socket.on("watchSessRequest", async function watchSessRequest({ token, data: list }, cb) {
+      let session = (await mongoose.startSession());
+      let playlist, request;
+      try {
+        await session.startTransaction()
+        // TODO: check that all opengraph data is present
+        console.log(list);
+        let [user, friend] = await Promise.all([
+          User.findByToken(token),
+          User.findById(list.to)
+        ])
+        // let playlist = new Playlist(list);
+        // user.addAccessToPlaylist({ id: playlist._id, session })
+        if (!list.playlistId) {
+          playlist = await createPlaylist({ user, list, session })
+        } else {
+          // TODO: error management here if it doesnt exist
+          playlist = await Playlist.findById(list.playlistId)
+        }
+        request = {
+          playlistId: playlist._id,
+          friendship_id: list.friendship_id
+        }
+        await friend.addAccessToPlaylist({ id: playlist._id, session });
+        await Promise.all([
+          user.recordWatchRequest({ request, session }),
+          friend.recordWatchRequest({ request, session })
+        ])
+        io.to(list.friendship_id).emit("watchSessRequest", {
+          ...playlist.toJSON(),
+          userId: user._id,
+          /** NB: this is necessary because we may have playlists available to us that were created in another friendship */
+          friendship_id: list.friendship_id
+        });
+        await session.commitTransaction()
+
+      } catch (error) {
+        await session.abortTransaction()
+        console.log(error);
+      }
+
+    });
+    socket.on("acceptWatchRequest", async function acceptWatchRequest({ token, data }, cb) {
       console.log(data);
       io.to(data.friendship_id).emit("acceptedWatchRequest", data)
     });
-    socket.on("pauseVideo", async function gotMessage({token, data}, cb) {
+    socket.on("pauseVideo", async function pauseVideo({ token, data }, cb) {
       console.log(data);
       io.to(data.friendship_id).emit("pauseVideo", data)
     });
-    socket.on("playVideo", async function gotMessage({token, data}, cb) {
+    socket.on("playVideo", async function playVideo({ token, data }, cb) {
       console.log(data);
       io.to(data.friendship_id).emit("playVideo", data)
     });

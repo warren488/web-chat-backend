@@ -38,7 +38,16 @@ let userSchema = new mongoose.Schema({
         userId: ObjectId,
         status: String
       }
+    ],
+    watchRequests: [
+      {
+        playlistId: ObjectId,
+        friendship_id: ObjectId
+      }
     ]
+  },
+  playlists: {
+    type: Array
   },
   pushKey: {
     type: String,
@@ -152,7 +161,7 @@ async function getChat(friendship_id, limit) {
   return chat;
 }
 
-async function getChatPage({friendship_id, limit, timestamp, msgId}) {
+async function getChatPage({ friendship_id, limit, timestamp, msgId }) {
   let chat = await Message.find(
     {
       user_id: this._id,
@@ -193,8 +202,8 @@ async function getLastMessage(friendship_id) {
   return chat;
 }
 
-async function recordFriendshipRequest({userId, requestorId, session}) {
-  
+async function recordFriendshipRequest({ userId, requestorId, session }) {
+
   return User.findByIdAndUpdate(
     userId,
     {
@@ -224,6 +233,7 @@ async function requestFriend(friendId, { session } = {}) {
     let sentRequest = this.interactions.sentRequests.find(
       request => request.userId.toString() === friendId
     );
+    // FIXME: WHAT THE HELL IS GOING ON HERE
     if (true || !receivedRequest && !sentRequest) {
       this.interactions.sentRequests = [
         // we either spread the current array if it exists or we create a new one
@@ -234,7 +244,7 @@ async function requestFriend(friendId, { session } = {}) {
       console.log('here');
       return Promise.all([
         this.save({ session }),
-        User.recordFriendshipRequest({userId: friendId, requestorId: this._id, session})
+        User.recordFriendshipRequest({ userId: friendId, requestorId: this._id, session })
       ]);
       console.log('here');
     } else if (receivedRequest) {
@@ -257,9 +267,45 @@ async function requestFriend(friendId, { session } = {}) {
   };
 
   return Promise.all([
-    this.save(),
-    User.recordFriendshipRequest({userId: friendId, requestorId: this._id})
+    this.save({ session }),
+    User.recordFriendshipRequest({ userId: friendId, requestorId: this._id, session })
   ]);
+}
+
+async function addAccessToPlaylist({ id, session, delaySave }) {
+  if (this.playlists) {
+    if(!this.playlists.includes(id)){
+      this.playlists.push(id)
+    }
+  } else {
+    this.playlists = [id]
+  }
+  return this.save({ session })
+}
+
+async function recordWatchRequest({ request, session } = {}) {
+  session = session || (await mongoose.startSession());
+  if (this.interactions) {
+    if (this.interactions.watchRequests) {
+      this.interactions.watchRequests = [
+        // we either spread the current array if it exists or we create a new one
+        ...(this.interactions.watchRequests || []),
+        request
+      ];
+
+      console.log('here');
+    }
+    return this.save({ session })
+  }
+
+  this.interactions = {
+    watchRequests: [
+      request,
+    ],
+  };
+
+  return this.save({ session });
+
 }
 
 /**
@@ -279,7 +325,7 @@ async function addFriend(friend, { session } = {}) {
     let { _id, username, imgUrl } = friend;
     let myFriendshipData = this.friends.find((friend) => friend.friendId === _id);
     if (myFriendshipData) {
-      return {myFriendshipData};
+      return { myFriendshipData };
     }
     myFriendshipData = {
       _id: new mongoose.Types.ObjectId(),
@@ -565,6 +611,8 @@ const writableProperties = [
 ];
 
 userSchema.methods.generateAuthToken = generateAuthToken;
+userSchema.methods.addAccessToPlaylist = addAccessToPlaylist;
+userSchema.methods.recordWatchRequest = recordWatchRequest;
 userSchema.methods.revokeAllTokens = revokeAllTokens;
 userSchema.methods.attachToken = attachToken;
 userSchema.methods.getChat = getChat;
