@@ -110,10 +110,6 @@ module.exports = async function ioconnection(io, activeUsers, status) {
       });
     });
 
-    socket.on("watchVidRequest", async function watchVidRequest({ token, data }, cb) {
-      console.log(data);
-      io.to(data.friendship_id).emit("watchVidRequest", data)
-    });
     socket.on("getPlaylists", async function getPlaylists({ token }, cb) {
       let user = await User.findByToken(token)
       if (!user || !user.playlists || user.playlists.length === 0) {
@@ -127,6 +123,9 @@ module.exports = async function ioconnection(io, activeUsers, status) {
       try {
         console.log(data);
         let playlist = await Playlist.addVidToPlaylist(data)
+        if (data.friendship_id) {
+          io.to(data.friendship_id).emit("playListUpdated", playlist)
+        }
         return cb(null, playlist)
       } catch (error) {
         console.log(error);
