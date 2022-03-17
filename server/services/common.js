@@ -43,7 +43,7 @@ async function sendPushMessage(
   );
   const payload = JSON.stringify({
     title: `${user.username}`,
-    text: media ? `new ${media}` : text,
+    text: text ? text : `new ${media}`,
     friendship_id,
     url,
     createdAt
