@@ -28,7 +28,7 @@ async function sendPushFriendRequest({ recipient, from }) {
 }
 async function sendPushMessage(
   user,
-  { friendship_id, text, media, createdAt, type }
+  { friendship_id, text, media, createdAt, type, url }
 ) {
   const receiver = await User.findOne(
     {
@@ -45,6 +45,7 @@ async function sendPushMessage(
     title: `${user.username}`,
     text: media ? `new ${media}` : text,
     friendship_id,
+    url,
     createdAt
   });
   return sendPushNotification({ user: receiver, payload })
