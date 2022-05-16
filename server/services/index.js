@@ -271,10 +271,10 @@ function sendFriendRequest(io, sess) {
     await session.commitTransaction();
     await session.endSession();
     io.to(req.body.friendId).emit("newFriendRequest", {
-      username: req.user.username,
+      ...req.user.toJSON(),
       eventData: event.toJSON(),
-      createdAt: Date.now(),
-      ...sentRequest.toJSON(),
+      acceptanceStatus: sentRequest.status,
+      fromId: sentRequest.fromId,
     });
     console.log('here4');
     sendPushFriendRequest({ recipient: { _id: req.body.friendId }, from: req.user })
@@ -354,6 +354,8 @@ async function getMe(req, res) {
           if (request.status !== "denied") {
             requestedUsers.forEach((user) => {
               if (user._id.toString() === request.fromId.toString()) {
+                // we do this to get it in a format resembling the user object because we pass the request
+                // object to components that take in a user (like profile)
                 accumulator.push({
                   ...user.toJSON(),
                   acceptanceStatus: request.status,

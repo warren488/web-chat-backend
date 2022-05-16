@@ -286,15 +286,12 @@ async function addAccessToPlaylist({ id, session, delaySave }) {
 async function recordWatchRequest({ request, session } = {}) {
   session = session || (await mongoose.startSession());
   if (this.interactions) {
-    if (this.interactions.watchRequests) {
       this.interactions.watchRequests = [
         // we either spread the current array if it exists or we create a new one
         ...(this.interactions.watchRequests || []),
         request
       ];
-
       console.log('here');
-    }
     return this.save({ session })
   }
 

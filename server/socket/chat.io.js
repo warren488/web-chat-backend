@@ -38,7 +38,7 @@ module.exports = async function ioconnection(io, activeUsers, status) {
         }
       } catch (error) {
         console.log(error);
-        callback(error, null);
+        return callback ? callback(error, null): null;
       }
       return callback ? callback(null) : null;
     });
