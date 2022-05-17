@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const { sendPushMessage } = require("../services/common");
 const Playlist = require("../models/Playlist");
 const { createPlaylist } = require("../services");
+const async = require("hbs/lib/async");
 
 module.exports = async function ioconnection(io, activeUsers, status) {
   if (status.attached) {
@@ -38,7 +39,7 @@ module.exports = async function ioconnection(io, activeUsers, status) {
         }
       } catch (error) {
         console.log(error);
-        return callback ? callback(error, null): null;
+        return callback ? callback(error, null) : null;
       }
       return callback ? callback(null) : null;
     });
@@ -132,39 +133,51 @@ module.exports = async function ioconnection(io, activeUsers, status) {
         cb(error)
       }
     })
-    socket.on("watchSessRequest", async function watchSessRequest({ token, data: list }, cb) {
+    socket.on("clearWatchRequests", async function clearWatchRequests({ token }, cb) {
+      try {
+        const user = await User.findByToken(token);
+        if (user) {
+          await user.clearWatchRequests()
+        }
+        cb(null)
+      } catch (err) {
+        console.log(err);
+        cb({ message: "error clearing watch requests" })
+      }
+    })
+    socket.on("watchSessRequest", async function watchSessRequest({ token, data: watchRequest }, cb) {
       let session = (await mongoose.startSession());
       let playlist, request;
       try {
         await session.startTransaction()
         // TODO: check that all opengraph data is present
-        console.log(list);
+        console.log(watchRequest);
         let [user, friend] = await Promise.all([
           User.findByToken(token),
-          User.findById(list.to)
+          User.findById(watchRequest.to)
         ])
-        if (!list.playlistId) {
-          playlist = await createPlaylist({ user, list, session })
+        if (!watchRequest.playlistId) {
+          playlist = await createPlaylist({ user, list: watchRequest, session })
         } else {
           // TODO: error management here if it doesnt exist
-          playlist = await Playlist.findById(list.playlistId)
+          playlist = await Playlist.findById(watchRequest.playlistId)
         }
+        const requestId = mongoose.Types.ObjectId()
         request = {
+          _id: requestId,
           playlistId: playlist._id,
           fromId: user._id,
           createdAt: Date.now(),
-          friendship_id: list.friendship_id
+          friendship_id: watchRequest.friendship_id
         }
         await friend.addAccessToPlaylist({ id: playlist._id, session });
         await Promise.all([
           user.recordWatchRequest({ request, session }),
           friend.recordWatchRequest({ request, session })
         ])
-        io.to(list.friendship_id).emit("watchSessRequest", {
+        io.to(watchRequest.friendship_id).emit("watchSessRequest", {
           ...playlist.toJSON(),
-          fromId: user._id,
-          /** NB: this is necessary because we may have playlists available to us that were created in another friendship */
-          friendship_id: list.friendship_id
+          ...request
         });
         await session.commitTransaction()
 
