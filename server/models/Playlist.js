@@ -4,9 +4,6 @@ const ObjectId = mongoose.Schema.Types.ObjectId;
 /** @namespace */
 let PlaylistSchema = new mongoose.Schema({
   name: {
-    type: String
-  },
-  name: {
     type: String,
     index: true
   },

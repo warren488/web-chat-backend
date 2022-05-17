@@ -113,7 +113,7 @@ module.exports = async function ioconnection(io, activeUsers, status) {
     socket.on("getPlaylists", async function getPlaylists({ token }, cb) {
       let user = await User.findByToken(token)
       if (!user || !user.playlists || user.playlists.length === 0) {
-        cb(null, [])
+        return cb(null, [])
       }
       let playlists = await Playlist.getPlaylists(user.playlists)
       console.log(playlists);
@@ -143,8 +143,6 @@ module.exports = async function ioconnection(io, activeUsers, status) {
           User.findByToken(token),
           User.findById(list.to)
         ])
-        // let playlist = new Playlist(list);
-        // user.addAccessToPlaylist({ id: playlist._id, session })
         if (!list.playlistId) {
           playlist = await createPlaylist({ user, list, session })
         } else {
@@ -153,6 +151,8 @@ module.exports = async function ioconnection(io, activeUsers, status) {
         }
         request = {
           playlistId: playlist._id,
+          fromId: user._id,
+          createdAt: Date.now(),
           friendship_id: list.friendship_id
         }
         await friend.addAccessToPlaylist({ id: playlist._id, session });
@@ -162,7 +162,7 @@ module.exports = async function ioconnection(io, activeUsers, status) {
         ])
         io.to(list.friendship_id).emit("watchSessRequest", {
           ...playlist.toJSON(),
-          userId: user._id,
+          fromId: user._id,
           /** NB: this is necessary because we may have playlists available to us that were created in another friendship */
           friendship_id: list.friendship_id
         });

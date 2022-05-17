@@ -372,6 +372,7 @@ async function getMe(req, res) {
         ...req.user.toJSON(),
         interactions: {
           sentRequests: req.user.interactions.sentRequests,
+          watchRequests: req.user.interactions.watchRequests,
           receivedRequests: filteredRequests,
         },
       });

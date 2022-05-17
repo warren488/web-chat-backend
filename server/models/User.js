@@ -42,7 +42,9 @@ let userSchema = new mongoose.Schema({
     watchRequests: [
       {
         playlistId: ObjectId,
-        friendship_id: ObjectId
+        friendship_id: ObjectId,
+        fromId: ObjectId,
+        createdAt: Number
       }
     ]
   },
@@ -303,6 +305,15 @@ async function recordWatchRequest({ request, session } = {}) {
 
   return this.save({ session });
 
+}
+
+
+async function clearWatchRequests({ session } = {}) {
+  session = session || (await mongoose.startSession());
+  if (this.interactions) {
+      this.interactions.watchRequests = []
+    return this.save({ session })
+  }
 }
 
 /**
@@ -608,6 +619,7 @@ const writableProperties = [
 ];
 
 userSchema.methods.generateAuthToken = generateAuthToken;
+userSchema.methods.clearWatchRequests = clearWatchRequests;
 userSchema.methods.addAccessToPlaylist = addAccessToPlaylist;
 userSchema.methods.recordWatchRequest = recordWatchRequest;
 userSchema.methods.revokeAllTokens = revokeAllTokens;
