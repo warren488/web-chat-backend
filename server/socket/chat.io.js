@@ -158,28 +158,26 @@ module.exports = async function ioconnection(io, activeUsers, status) {
         ])
         if (!watchRequest.playlistId) {
           playlist = await createPlaylist({ user, list: watchRequest, session })
-        } else {
-          // TODO: error management here if it doesnt exist
-          playlist = await Playlist.findById(watchRequest.playlistId)
         }
         const requestId = mongoose.Types.ObjectId()
         request = {
           _id: requestId,
-          playlistId: playlist._id,
+          playlistId: playlist ? playlist._id : watchRequest.playlistId,
           fromId: user._id,
           createdAt: Date.now(),
           friendship_id: watchRequest.friendship_id
         }
-        await friend.addAccessToPlaylist({ id: playlist._id, session });
+        await friend.addAccessToPlaylist({ id: playlist ? playlist._id : watchRequest.playlistId, session });
         await Promise.all([
           user.recordWatchRequest({ request, session }),
           friend.recordWatchRequest({ request, session })
         ])
-        io.to(watchRequest.friendship_id).emit("watchSessRequest", {
-          ...playlist.toJSON(),
-          ...request
-        });
+        if (playlist) {
+          request.newPlaylist = playlist.toJSON()
+        }
+        io.to(watchRequest.friendship_id).emit("watchSessRequest", request);
         await session.commitTransaction()
+        cb(null, request)
 
       } catch (error) {
         await session.abortTransaction()
@@ -191,13 +189,13 @@ module.exports = async function ioconnection(io, activeUsers, status) {
       console.log(data);
       io.to(data.friendship_id).emit("acceptedWatchRequest", data)
     });
-    socket.on("pauseVideo", async function pauseVideo({ token, data }, cb) {
+    socket.on("pauseVideo", async function pauseVideo({ token, data, sessionUid }, cb) {
       console.log(data);
-      io.to(data.friendship_id).emit("pauseVideo", data)
+      io.to(data.friendship_id).emit("pauseVideo", { ...data, sessionUid })
     });
-    socket.on("playVideo", async function playVideo({ token, data }, cb) {
+    socket.on("playVideo", async function playVideo({ token, data, sessionUid }, cb) {
       console.log(data);
-      io.to(data.friendship_id).emit("playVideo", data)
+      io.to(data.friendship_id).emit("playVideo", { ...data, sessionUid })
     });
 
     socket.on("sendMessage", async function sendMessage(
