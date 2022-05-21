@@ -112,7 +112,9 @@ module.exports = async function ioconnection(io, activeUsers, status) {
     });
 
     socket.on("getPlaylists", async function getPlaylists({ token }, cb) {
+      console.log('playlists', token);
       let user = await User.findByToken(token)
+      console.log(user);
       if (!user || !user.playlists || user.playlists.length === 0) {
         return cb(null, [])
       }
@@ -158,7 +160,15 @@ module.exports = async function ioconnection(io, activeUsers, status) {
         ])
         if (!watchRequest.playlistId) {
           playlist = await createPlaylist({ user, list: watchRequest, session })
+        } else {
+          // if the user doesnt have access to it then we want to do this so it will be attached to the request as newplaylist 
+          let hasAccess = await friend.hasAccessToPlaylist(watchRequest.playlistId);
+          if(!hasAccess){
+            playlist = await Playlist.findById(watchRequest.playlistId)
+          }
         }
+        // i think we only have to do this if playlist exists
+        await friend.addAccessToPlaylist({ id: playlist ? playlist._id : watchRequest.playlistId, session });
         const requestId = mongoose.Types.ObjectId()
         request = {
           _id: requestId,
@@ -167,7 +177,6 @@ module.exports = async function ioconnection(io, activeUsers, status) {
           createdAt: Date.now(),
           friendship_id: watchRequest.friendship_id
         }
-        await friend.addAccessToPlaylist({ id: playlist ? playlist._id : watchRequest.playlistId, session });
         await Promise.all([
           user.recordWatchRequest({ request, session }),
           friend.recordWatchRequest({ request, session })

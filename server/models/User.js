@@ -276,7 +276,8 @@ async function requestFriend(friendId, { session } = {}) {
 
 async function addAccessToPlaylist({ id, session, delaySave }) {
   if (this.playlists) {
-    if(!this.playlists.includes(id)){
+    const exists = this.playlists.find(plId => plId.toString() === id.toString())
+    if (!exists) {
       this.playlists.push(id)
     }
   } else {
@@ -285,15 +286,22 @@ async function addAccessToPlaylist({ id, session, delaySave }) {
   return this.save({ session })
 }
 
+async function hasAccessToPlaylist(id) {
+  if (this.playlists) {
+    const exists = this.playlists.find(plId => plId.toString() === id.toString())
+    return exists;
+  } else return false
+}
+
 async function recordWatchRequest({ request, session } = {}) {
   session = session || (await mongoose.startSession());
   if (this.interactions) {
-      this.interactions.watchRequests = [
-        // we either spread the current array if it exists or we create a new one
-        ...(this.interactions.watchRequests || []),
-        request
-      ];
-      console.log('here');
+    this.interactions.watchRequests = [
+      // we either spread the current array if it exists or we create a new one
+      ...(this.interactions.watchRequests || []),
+      request
+    ];
+    console.log('here');
     return this.save({ session })
   }
 
@@ -311,7 +319,7 @@ async function recordWatchRequest({ request, session } = {}) {
 async function clearWatchRequests({ session } = {}) {
   session = session || (await mongoose.startSession());
   if (this.interactions) {
-      this.interactions.watchRequests = []
+    this.interactions.watchRequests = []
     return this.save({ session })
   }
 }
@@ -621,6 +629,7 @@ const writableProperties = [
 userSchema.methods.generateAuthToken = generateAuthToken;
 userSchema.methods.clearWatchRequests = clearWatchRequests;
 userSchema.methods.addAccessToPlaylist = addAccessToPlaylist;
+userSchema.methods.hasAccessToPlaylist = hasAccessToPlaylist;
 userSchema.methods.recordWatchRequest = recordWatchRequest;
 userSchema.methods.revokeAllTokens = revokeAllTokens;
 userSchema.methods.attachToken = attachToken;
