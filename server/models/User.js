@@ -275,8 +275,9 @@ async function requestFriend(friendId, { session } = {}) {
 }
 
 async function addAccessToPlaylist({ id, session, delaySave }) {
+  session = session || (await mongoose.startSession());
   if (this.playlists) {
-    const exists = this.playlists.find(plId => plId.toString() === id.toString())
+    const exists = this.playlists.find(plId => plId && plId.toString() === id.toString())
     if (!exists) {
       this.playlists.push(id)
     }
@@ -288,7 +289,7 @@ async function addAccessToPlaylist({ id, session, delaySave }) {
 
 async function hasAccessToPlaylist(id) {
   if (this.playlists) {
-    const exists = this.playlists.find(plId => plId.toString() === id.toString())
+    const exists = this.playlists.find(plId =>  plId && plId.toString() === id.toString())
     return exists;
   } else return false
 }
