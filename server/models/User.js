@@ -83,8 +83,17 @@ let userSchema = new mongoose.Schema({
   ],
   password: {
     type: String,
-    required: true,
     minlength: 7
+  },
+  firebaseUid: {
+    type: String,
+    minlength: 1,
+    index: true,
+  },
+  // knowing where the user was created will allow us to know what uid was used to create their firebase account, wether it came from mongo or firebase
+  // although if we create a firebase account with a mongo id it's firebase and mongo id will be the same 
+  firebaseCreated: {
+    type: Boolean
   },
   lastOnline: {
     type: Number
@@ -111,6 +120,19 @@ let userSchema = new mongoose.Schema({
     }
   ]
 });
+
+async function createNew(userData) {
+  // await User.schema.methods.validateSchema(req.body)
+  let user = new User({
+    ...userData,
+    chats: [],
+    interactions: { receivedRequests: [], sentRequests: [] },
+  });
+
+  let token = await user.generateAuthToken();
+  user = await user.save();
+  return { user, token };
+}
 
 /**
  * generate an authentication token for the user
@@ -289,7 +311,7 @@ async function addAccessToPlaylist({ id, session, delaySave }) {
 
 async function hasAccessToPlaylist(id) {
   if (this.playlists) {
-    const exists = this.playlists.find(plId =>  plId && plId.toString() === id.toString())
+    const exists = this.playlists.find(plId => plId && plId.toString() === id.toString())
     return exists;
   } else return false
 }
@@ -460,6 +482,8 @@ function toJSON() {
   user = this;
   return {
     id: user._id,
+    firebaseUid: user.firebaseUid,
+    firebaseCreated: user.firebaseCreated,
     email: user.email,
     username: user.username,
     lastOnline: user.lastOnline,
@@ -647,6 +671,7 @@ userSchema.methods.toJSON = toJSON;
 userSchema.methods.removeToken = removeToken;
 userSchema.methods.getChatPage = getChatPage;
 userSchema.methods.requestFriend = requestFriend;
+userSchema.statics.createNew = createNew;
 userSchema.statics.findByToken = findByToken;
 userSchema.statics.findByCredentials = findByCredentials;
 userSchema.statics.findByUsername = findByUsername;
@@ -664,6 +689,9 @@ userSchema.pre(
     let user = this;
     if (user.chats === undefined) {
       user.chats = [];
+    }
+    if (!user.password && !user.firebaseUid) {
+      throw ("no valid authentication method for user")
     }
     if (user.isModified("password")) {
       user.password = hash(user.password);

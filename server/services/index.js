@@ -21,7 +21,9 @@ async function revokeAllTokens(req, res) {
 
 async function generateUserFirebaseToken(req, res) {
   try {
-    let token = await auth.createCustomToken(req.user._id.toString());
+    // if the user was created by us then the mongo id and fbase id are the same anyways so this works
+    const firebaseUid = req.user.firebaseUid || req.user.uid
+    let token = await auth.createCustomToken(firebaseUid.toString());
     res.status(200).send({ message: "successfully generated", token });
   } catch (error) {
     console.log(
@@ -33,17 +35,7 @@ async function generateUserFirebaseToken(req, res) {
 
 async function createUser(req, res) {
   try {
-    // await User.schema.methods.validateSchema(req.body)
-    let user = new User({
-      ...req.body,
-      chats: [],
-      interactions: { receivedRequests: [], sentRequests: [] },
-    });
-
-    let token = await user.generateAuthToken();
-    // let token = await auth.createCustomToken(user.id);
-    // await user.attachToken(token);
-    user = await user.save();
+    const { user, token } = await User.createNew(req.body);
     return res.status(200).send({ user, token });
   } catch (error) {
     console.log(error);
@@ -117,6 +109,8 @@ async function login(req, res) {
   try {
     let user;
     let token;
+    // either check for, and reuse the provided token, or check the email and pw (findByCredentials) 
+    // and generate a new token
     if (req.body.token) {
       token = req.body.token;
       user = await User.findByToken(req.body.token);
@@ -137,6 +131,33 @@ async function login(req, res) {
       return res.status(404).send(error);
     }
     return res.status(500).send(error);
+  }
+}
+async function loginWithCustomProvider(req, res) {
+  try {
+    let user, token;
+    if (!req.body.firebaseUid || !req.body.username) {
+      // TODO: make sure its a valid firebase uid 
+      return res.status(400).send({ message: "insufficient auth data provided" })
+    }
+    user = await User.findOne({
+      firebaseUid: req.body.firebaseUid
+    });
+    if (user) {
+      console.log(user);
+      token = await user.generateAuthToken();
+    }
+    // if a firebaseuid is provided but doesnt return a user we need to create it 
+    else {
+      // for some reason i cant get destructuring to work properly 
+      data = await User.createNew(req.body);
+      user = data.user
+      token = data.token
+    }
+    return res.status(200).send({ token, username: user.username });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({ message: "error occured, please try again" });
   }
 }
 
@@ -424,7 +445,7 @@ async function createPlaylist({ userId, user, list, session }) {
   if (!user) {
     user = await User.findById(userId)
   }
-  let playlist = new Playlist({...list, createdBy: user._id});
+  let playlist = new Playlist({ ...list, createdBy: user._id });
   await user.addAccessToPlaylist({ id: playlist._id, session })
   await playlist.save({ session })
   return playlist;
@@ -550,6 +571,7 @@ module.exports = {
   getMessages,
   createUser,
   login,
+  loginWithCustomProvider,
   subScribeToPush,
   revokeAllTokens,
   crashReport,

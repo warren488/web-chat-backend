@@ -6,6 +6,7 @@ let {
   getUsersRequestHandler,
   getMe,
   login,
+  loginWithCustomProvider,
   updateInfo,
   revokeAllTokens,
   disablePush,
@@ -28,6 +29,7 @@ let {
 module.exports = function(io) {
   router.post("/crashreport", crashReport);
   router.post("/login", login);
+  router.post("/loginWithCustomProvider", loginWithCustomProvider);
   router.post("/logout", authenticate, logout);
   router.post("/signup", createUser);
   router.get("/users", authenticate, getUsersRequestHandler);
