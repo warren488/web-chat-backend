@@ -22,7 +22,7 @@ async function revokeAllTokens(req, res) {
 async function generateUserFirebaseToken(req, res) {
   try {
     // if the user was created by us then the mongo id and fbase id are the same anyways so this works
-    const firebaseUid = req.user.firebaseUid || req.user.uid
+    const firebaseUid = req.user.firebaseUid || req.user._id
     let token = await auth.createCustomToken(firebaseUid.toString());
     res.status(200).send({ message: "successfully generated", token });
   } catch (error) {
