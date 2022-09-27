@@ -1,4 +1,4 @@
-const errorAdaptors = require('./errorAdapters');
+const errorAdaptors = require('./errorToResponse');
 module.exports = {
   errorToMessage: (err) => {
     let errorMessage;

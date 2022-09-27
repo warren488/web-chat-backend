@@ -13,6 +13,7 @@ const https = require("https");
 const cheerio = require("cheerio");
 const { getUsers, sendPushFriendRequest } = require("./common");
 const Playlist = require("../models/Playlist");
+const { uniqueConst } = require("./error/errorAdapters");
 
 async function revokeAllTokens(req, res) {
   await req.user.revokeAllTokens();
@@ -150,13 +151,27 @@ async function loginWithCustomProvider(req, res) {
     // if a firebaseuid is provided but doesnt return a user we need to create it 
     else {
       // for some reason i cant get destructuring to work properly 
-      data = await User.createNew(req.body);
-      user = data.user
-      token = data.token
+      try {
+        data = await User.createNew(req.body);
+        user = data.user
+        token = data.token
+      } catch (error) {
+        // it seems like this error can occur even though we check to see if the user exists (on the frontend)
+        // I think this may be the result of some kind of selective case insensitivity in mongo db
+        const { found } = uniqueConst(error, 'username');
+        console.log('new creation conflict', found);
+        if (found) {
+          const randString = Math.floor(Math.random() * 1000);
+          data = await User.createNew({ ...req.body, username: `${req.body.username}${randString}` });
+          user = data.user
+          token = data.token
+        }
+      }
     }
     return res.status(200).send({ token, username: user.username });
   } catch (error) {
     console.log(error);
+    // the type of stuff that will go in the error to response 
     return res.status(500).send({ message: "error occured, please try again" });
   }
 }

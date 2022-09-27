@@ -12,7 +12,7 @@
     "gen-docs": "jsdoc --configure .jsdoc.json --verbose"
   },
   "engines": {
-    "node": "10.14.1"
+    "node": "16.4.2"
   },
   "author": "",
   "license": "ISC",
