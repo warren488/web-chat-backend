@@ -165,6 +165,8 @@ async function loginWithCustomProvider(req, res) {
           data = await User.createNew({ ...req.body, username: `${req.body.username}${randString}` });
           user = data.user
           token = data.token
+        } else {
+          throw error;
         }
       }
     }
