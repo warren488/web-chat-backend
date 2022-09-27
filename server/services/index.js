@@ -173,6 +173,7 @@ async function loginWithCustomProvider(req, res) {
     return res.status(200).send({ token, username: user.username });
   } catch (error) {
     console.log(error);
+    console.log(uniqueConst(error));
     // the type of stuff that will go in the error to response 
     return res.status(500).send({ message: "error occured, please try again" });
   }
