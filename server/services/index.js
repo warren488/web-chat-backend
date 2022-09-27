@@ -347,6 +347,8 @@ async function getFriends(req, res) {
 async function searchUser(req, res) {
   try {
     let user = await User.findByUsername(req.query.username);
+    // at lease for the key fields it seems that searching is case sensitive but creation is not
+    let user1 = await User.findByUsername(req.query.username.toLowerCase());
     return res.status(200).send({ exists: true });
   } catch (e) {
     console.log(e);
