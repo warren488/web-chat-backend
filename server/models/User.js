@@ -706,5 +706,5 @@ userSchema.index({ title: 'text', username: 'text' })
 userSchema.plugin(uniqueValidator);
 
 let User = mongoose.model("User", userSchema);
-User.createIndexes();
+// User.createIndexes();
 module.exports = User;
