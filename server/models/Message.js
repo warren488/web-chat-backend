@@ -6,6 +6,11 @@ let MessageSchema = new mongoose.Schema({
     type: ObjectId,
     required: true
   },
+  uuid: {
+    type: String,
+    required: true,
+    index: true,
+  },
   linkPreview: {
     title: String,
     image: String,
@@ -88,6 +93,8 @@ async function markAsReceived({ friendship_id, range, fromId, read }) {
 }
 
 MessageSchema.statics.markAsReceived = markAsReceived;
+
+MessageSchema.index({ user_id: 1, uuid: 1, }, { unique: true });
 
 let Message = mongoose.model("Message", MessageSchema);
 

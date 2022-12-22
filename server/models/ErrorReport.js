@@ -10,6 +10,9 @@ let ErrorReportSchema = new mongoose.Schema({
   },
   userAgent: {
     type: String
+  },
+  data: {
+    type: Object
   }
 });
 

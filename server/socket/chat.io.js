@@ -5,6 +5,7 @@ const { sendPushMessage } = require("../services/common");
 const Playlist = require("../models/Playlist");
 const { createPlaylist } = require("../services");
 const async = require("hbs/lib/async");
+const ErrorReport = require("../models/ErrorReport");
 
 module.exports = async function ioconnection(io, activeUsers, status) {
   if (status.attached) {
@@ -163,7 +164,7 @@ module.exports = async function ioconnection(io, activeUsers, status) {
         } else {
           // if the user doesnt have access to it then we want to do this so it will be attached to the request as newplaylist 
           let hasAccess = await friend.hasAccessToPlaylist(watchRequest.playlistId);
-          if(!hasAccess){
+          if (!hasAccess) {
             playlist = await Playlist.findById(watchRequest.playlistId)
           }
         }
@@ -191,6 +192,7 @@ module.exports = async function ioconnection(io, activeUsers, status) {
       } catch (error) {
         await session.abortTransaction()
         console.log(error);
+        cb(err, null)
       }
 
     });
@@ -232,7 +234,8 @@ module.exports = async function ioconnection(io, activeUsers, status) {
           text: messageData.text,
           from: user.username,
           /** @todo make this change in the schema and start using this instead of username */
-          fromId: user._id
+          fromId: user._id,
+          uuid: messageData.uuid
         };
         if (messageData.type === "media") {
           message.url = messageData.url;
@@ -295,8 +298,25 @@ module.exports = async function ioconnection(io, activeUsers, status) {
           createdAt: message.createdAt
         });
       } catch (error) {
-        console.log(error);
-        callback(error, null);
+        if (error.code === 11000 && (error.keyPattern.user_id === 1) && (error.keyPattern.uuid === 1)) {
+          console.log("we have a dup message");
+          const serverTime = new Date().getTime();
+          let report = new ErrorReport({
+            error: "duplicate message",
+            data: {
+              ...messageData,
+              createdAtString: new Date(messageData.createdAt).toLocaleString({ language: "en", region: "GBR" }),
+              serverTimeString: new Date(serverTime).toLocaleString({ language: "en", region: "GBR" }),
+              serverTime: serverTime,
+              from: user.username + '/' + user._id,
+            }
+          });
+          await report.save();
+        } else {
+          console.log(error);
+          callback(error, null);
+        }
+
       }
     });
 
