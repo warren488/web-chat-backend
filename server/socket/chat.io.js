@@ -198,12 +198,20 @@ module.exports = async function ioconnection(io, activeUsers, status) {
     });
     socket.on("acceptWatchRequest", async function acceptWatchRequest({ token, data }, cb) {
       io.to(data.friendship_id).emit("acceptedWatchRequest", data)
+      cb(null, true)
     });
     socket.on("pauseVideo", async function pauseVideo({ token, data, sessionUid }, cb) {
       io.to(data.friendship_id).emit("pauseVideo", { ...data, sessionUid })
     });
     socket.on("playVideo", async function playVideo({ token, data, sessionUid }, cb) {
       io.to(data.friendship_id).emit("playVideo", { ...data, sessionUid })
+    });
+    socket.on("peerIdForCall", async function peerIdForCall({ token, ...data }, cb) {
+      io.to(data.friendship_id).emit("peerIdForCall", { ...data })
+    });
+    socket.on("call", async function call({ token, ...data }, cb) {
+      console.log(data);
+      io.to(data.friendship_id).emit("call", { ...data })
     });
     socket.on("nextVideo", async function nextVideo({ token, data, sessionUid }, cb) {
       io.to(data.friendship_id).emit("nextVideo", { ...data, sessionUid })

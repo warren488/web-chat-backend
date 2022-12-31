@@ -8,6 +8,7 @@
     "startl": "node --trace-warnings -r ./node_modules/dotenv/config server/server2.js dotenv_config_path=$(pwd)/.env",
     "startw": "nodemon -r ./node_modules/dotenv/config server/server2.js dotenv_config_path=$(pwd)/.env",
     "start2": "nodemon -r ./node_modules/dotenv/config server/server2.js dotenv_config_path=$(pwd)/.env",
+    "serveall": "concurrently \"npm run startw\" \"firebase emulators:start\"",
     "test": "echo \"Error: no test specified\" && exit 1",
     "gen-docs": "jsdoc --configure .jsdoc.json --verbose"
   },
@@ -37,6 +38,7 @@
     "web-push": "^3.4.4"
   },
   "devDependencies": {
+    "concurrently": "^7.6.0",
     "docdash": "^1.1.1"
   }
 }

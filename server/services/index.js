@@ -279,7 +279,6 @@ function sendFriendRequest(io, sess) {
       session = sess || (await mongoose.startSession());
       await session.startTransaction();
       [user, requestRecipient] = await req.user.requestFriend(req.body.friendId, { session });
-      console.log('here2');
     } catch (error) {
       console.log(error);
       let message = errorToMessage(error);
@@ -310,10 +309,9 @@ function sendFriendRequest(io, sess) {
     await session.commitTransaction();
     await session.endSession();
     io.to(req.body.friendId).emit("newFriendRequest", {
-      ...req.user.toJSON(),
+      username: req.user.toJSON().username,
       eventData: event.toJSON(),
-      acceptanceStatus: sentRequest.status,
-      fromId: sentRequest.fromId,
+      ...sentRequest
     });
     console.log('here4');
     sendPushFriendRequest({ recipient: { _id: req.body.friendId }, from: req.user })
@@ -346,12 +344,12 @@ async function getFriends(req, res) {
 
 async function searchUser(req, res) {
   try {
-    
+
     // // at lease for the key fields it seems that searching is case sensitive but creation is not
-    let user = await User.findOne({ 
+    let user = await User.findOne({
       $or: [{ username: req.query.username }, { username: req.query.username.toLowerCase() }]
     });
-    if(user){
+    if (user) {
       return res.status(200).send({ exists: true });
     } else {
       return res.status(200).send({ exists: false });
@@ -492,6 +490,10 @@ const getPromise = (url) => {
 
 async function previewLink(req, res) {
   try {
+    const url = new URL("https://youtu.be/Y-Qm0SvJpdw")
+    console.log(url.hostname);
+    if (url.hostname) {
+    }
     const html = await getPromise(req.body.url);
     const $ = cheerio.load(html);
     const getMetaRag = (name) => {
