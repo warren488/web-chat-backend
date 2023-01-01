@@ -209,6 +209,15 @@ module.exports = async function ioconnection(io, activeUsers, status) {
     socket.on("peerIdForCall", async function peerIdForCall({ token, ...data }, cb) {
       io.to(data.friendship_id).emit("peerIdForCall", { ...data })
     });
+    socket.on("callBusy", async function callBusy({ token, ...data }, cb) {
+      io.to(data.friendship_id).emit("callBusy", { ...data })
+    });
+    socket.on("callDeclined", async function callDeclined({ token, ...data }, cb) {
+      io.to(data.friendship_id).emit("callDeclined", { ...data })
+    });
+    socket.on("endCall", async function endCall({ token, ...data }, cb) {
+      io.to(data.friendship_id).emit("endCall", { ...data })
+    });
     socket.on("call", async function call({ token, ...data }, cb) {
       console.log(data);
       io.to(data.friendship_id).emit("call", { ...data })
