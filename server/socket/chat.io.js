@@ -113,14 +113,11 @@ module.exports = async function ioconnection(io, activeUsers, status) {
     });
 
     socket.on("getPlaylists", async function getPlaylists({ token }, cb) {
-      console.log('playlists', token);
       let user = await User.findByToken(token)
-      console.log(user);
       if (!user || !user.playlists || user.playlists.length === 0) {
         return cb(null, [])
       }
       let playlists = await Playlist.getPlaylists(user.playlists)
-      console.log(playlists);
       cb(null, playlists)
     })
     socket.on("addVideoToPlaylist", async function addVideoToPlaylist({ token, data }, cb) {
@@ -154,7 +151,6 @@ module.exports = async function ioconnection(io, activeUsers, status) {
       try {
         await session.startTransaction()
         // TODO: check that all opengraph data is present
-        console.log(watchRequest);
         let [user, friend] = await Promise.all([
           User.findByToken(token),
           User.findById(watchRequest.to)
@@ -206,21 +202,22 @@ module.exports = async function ioconnection(io, activeUsers, status) {
     socket.on("playVideo", async function playVideo({ token, data, sessionUid }, cb) {
       io.to(data.friendship_id).emit("playVideo", { ...data, sessionUid })
     });
-    socket.on("peerIdForCall", async function peerIdForCall({ token, ...data }, cb) {
-      io.to(data.friendship_id).emit("peerIdForCall", { ...data })
+    socket.on("peerIdForCall", async function peerIdForCall({ token, data }, cb) {
+      io.to(data.friendship_id).emit("peerIdForCall", data)
     });
-    socket.on("callBusy", async function callBusy({ token, ...data }, cb) {
-      io.to(data.friendship_id).emit("callBusy", { ...data })
+    socket.on("callBusy", async function callBusy({ token, data }, cb) {
+      io.to(data.friendship_id).emit("callBusy", data)
     });
-    socket.on("callDeclined", async function callDeclined({ token, ...data }, cb) {
-      io.to(data.friendship_id).emit("callDeclined", { ...data })
+    socket.on("callDeclined", async function callDeclined({ token, data }, cb) {
+      io.to(data.friendship_id).emit("callDeclined", data)
     });
-    socket.on("endCall", async function endCall({ token, ...data }, cb) {
-      io.to(data.friendship_id).emit("endCall", { ...data })
+    socket.on("endCall", async function endCall({ token, data }, cb) {
+      console.log("endCall", data);
+      io.to(data.friendship_id).emit("endCall", data)
     });
-    socket.on("call", async function call({ token, ...data }, cb) {
+    socket.on("call", async function call({ token, data }, cb) {
       console.log(data);
-      io.to(data.friendship_id).emit("call", { ...data })
+      io.to(data.friendship_id).emit("call", data)
     });
     socket.on("nextVideo", async function nextVideo({ token, data, sessionUid }, cb) {
       io.to(data.friendship_id).emit("nextVideo", { ...data, sessionUid })
