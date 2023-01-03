@@ -81,7 +81,6 @@ async function getUsersRequestHandler(req, res) {
     if (exists) {
       return res.status(200).send({ exists: true });
     }
-    console.log(users);
     return res.status(200).send(users);
   } catch (e) {
     console.log(e);
@@ -145,7 +144,6 @@ async function loginWithCustomProvider(req, res) {
       firebaseUid: req.body.firebaseUid
     });
     if (user) {
-      console.log(user);
       token = await user.generateAuthToken();
     }
     // if a firebaseuid is provided but doesnt return a user we need to create it 
@@ -304,7 +302,6 @@ function sendFriendRequest(io, sess) {
       },
     });
     /** do i really want to fail if we dont store this event */
-    console.log('here3');
     await event.save({ session });
     await session.commitTransaction();
     await session.endSession();
@@ -313,7 +310,6 @@ function sendFriendRequest(io, sess) {
       eventData: event.toJSON(),
       ...sentRequest
     });
-    console.log('here4');
     sendPushFriendRequest({ recipient: { _id: req.body.friendId }, from: req.user })
 
     res.status(200).send({ message: "friend requested", interactions: user.interactions });
@@ -329,7 +325,6 @@ async function getFriends(req, res) {
     myFriendShips[index].lastMessage = Array.from(lastMessage);
   }
   myFriendShips.sort((friendshipA, friendshipB) => {
-    console.log(friendshipA, friendshipB);
     if (!friendshipB.lastMessage[0]) {
       return -1
     }
@@ -480,7 +475,6 @@ const getPromise = (url) => {
           data += chunk;
         });
         resp.on("end", () => {
-          // console.log(data);
           resolve(data);
         });
       })
@@ -490,11 +484,12 @@ const getPromise = (url) => {
 
 async function previewLink(req, res) {
   try {
-    const url = new URL("https://youtu.be/Y-Qm0SvJpdw")
-    console.log(url.hostname);
-    if (url.hostname) {
+    const url = new URL(req.body.url)
+    let urlString = req.body.url;
+    if(url.hostname === "youtu.be") {
+      urlString = `https://www.youtube.com/watch?v=${url.pathname.substring(1)}`
     }
-    const html = await getPromise(req.body.url);
+    const html = await getPromise(urlString);
     const $ = cheerio.load(html);
     const getMetaRag = (name) => {
       return (

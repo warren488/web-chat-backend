@@ -63,13 +63,6 @@ async function getUsers(query) {
       };
       delete query.username;
     }
-    console.log(query);
-    console.log(
-      mapExisting({
-        ...usernameSearch,
-        ...query
-      })
-    );
     const users = await User.find(
       mapExisting({
         ...usernameSearch,
