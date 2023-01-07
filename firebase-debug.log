@@ -1,28 +1,28 @@
-[debug] [2022-12-31T20:28:54.197Z] ----------------------------------------------------------------------
-[debug] [2022-12-31T20:28:54.198Z] Command:       /home/warren/.nvm/versions/node/v16.4.2/bin/node /home/warren/.nvm/versions/node/v16.4.2/bin/firebase emulators:start
-[debug] [2022-12-31T20:28:54.198Z] CLI Version:   11.0.0
-[debug] [2022-12-31T20:28:54.198Z] Platform:      linux
-[debug] [2022-12-31T20:28:54.198Z] Node Version:  v16.4.2
-[debug] [2022-12-31T20:28:54.198Z] Time:          Sat Dec 31 2022 16:28:54 GMT-0400 (Atlantic Standard Time)
-[debug] [2022-12-31T20:28:54.198Z] ----------------------------------------------------------------------
+[debug] [2023-01-07T15:38:14.246Z] ----------------------------------------------------------------------
+[debug] [2023-01-07T15:38:14.247Z] Command:       /home/warren/.nvm/versions/node/v16.4.2/bin/node /home/warren/.nvm/versions/node/v16.4.2/bin/firebase emulators:start
+[debug] [2023-01-07T15:38:14.247Z] CLI Version:   11.0.0
+[debug] [2023-01-07T15:38:14.247Z] Platform:      linux
+[debug] [2023-01-07T15:38:14.247Z] Node Version:  v16.4.2
+[debug] [2023-01-07T15:38:14.247Z] Time:          Sat Jan 07 2023 11:38:14 GMT-0400 (Atlantic Standard Time)
+[debug] [2023-01-07T15:38:14.247Z] ----------------------------------------------------------------------
 [debug] 
-[debug] [2022-12-31T20:28:54.235Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
-[debug] [2022-12-31T20:28:54.236Z] > authorizing via signed-in user (warren.s.488@gmail.com)
-[debug] [2022-12-31T20:28:54.256Z] openjdk version "17.0.5" 2022-10-18
-OpenJDK Runtime Environment (build 17.0.5+8-Ubuntu-2ubuntu120.04)
+[debug] [2023-01-07T15:38:14.284Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2023-01-07T15:38:14.284Z] > authorizing via signed-in user (warren.s.488@gmail.com)
+[debug] [2023-01-07T15:38:14.306Z] openjdk version "17.0.5" 2022-10-18
 
-[debug] [2022-12-31T20:28:54.256Z] OpenJDK 64-Bit Server VM (build 17.0.5+8-Ubuntu-2ubuntu120.04, mixed mode, sharing)
+[debug] [2023-01-07T15:38:14.306Z] OpenJDK Runtime Environment (build 17.0.5+8-Ubuntu-2ubuntu120.04)
+OpenJDK 64-Bit Server VM (build 17.0.5+8-Ubuntu-2ubuntu120.04, mixed mode, sharing)
 
-[debug] [2022-12-31T20:28:54.259Z] Parsed Java major version: 17
+[debug] [2023-01-07T15:38:14.309Z] Parsed Java major version: 17
 [info] i  emulators: Starting emulators: auth, storage {"metadata":{"emulator":{"name":"hub"},"message":"Starting emulators: auth, storage"}}
-[debug] [2022-12-31T20:28:54.264Z] [hub] writing locator at /tmp/hub-myapp-4f894.json
-[debug] [2022-12-31T20:28:58.633Z] Ignoring unsupported arg: port {"metadata":{"emulator":{"name":"storage"},"message":"Ignoring unsupported arg: port"}}
-[debug] [2022-12-31T20:28:59.107Z] Temp file directory for storage emulator: /tmp/firebase/storage/blobs {"metadata":{"emulator":{"name":"storage"},"message":"Temp file directory for storage emulator: /tmp/firebase/storage/blobs"}}
-[debug] [2022-12-31T20:28:59.111Z] Ignoring unsupported arg: auto_download {"metadata":{"emulator":{"name":"ui"},"message":"Ignoring unsupported arg: auto_download"}}
-[debug] [2022-12-31T20:28:59.112Z] Ignoring unsupported arg: port {"metadata":{"emulator":{"name":"ui"},"message":"Ignoring unsupported arg: port"}}
-[debug] [2022-12-31T20:28:59.112Z] Starting Emulator UI with command {"binary":"node","args":["--dns-result-order=ipv4first","/home/warren/.cache/firebase/emulators/ui-v1.7.0/server.bundle.js"],"optionalArgs":[],"joinArgs":false} {"metadata":{"emulator":{"name":"ui"},"message":"Starting Emulator UI with command {\"binary\":\"node\",\"args\":[\"--dns-result-order=ipv4first\",\"/home/warren/.cache/firebase/emulators/ui-v1.7.0/server.bundle.js\"],\"optionalArgs\":[],\"joinArgs\":false}"}}
+[debug] [2023-01-07T15:38:14.314Z] [hub] writing locator at /tmp/hub-myapp-4f894.json
+[debug] [2023-01-07T15:38:19.083Z] Ignoring unsupported arg: port {"metadata":{"emulator":{"name":"storage"},"message":"Ignoring unsupported arg: port"}}
+[debug] [2023-01-07T15:38:19.590Z] Temp file directory for storage emulator: /tmp/firebase/storage/blobs {"metadata":{"emulator":{"name":"storage"},"message":"Temp file directory for storage emulator: /tmp/firebase/storage/blobs"}}
+[debug] [2023-01-07T15:38:19.595Z] Ignoring unsupported arg: auto_download {"metadata":{"emulator":{"name":"ui"},"message":"Ignoring unsupported arg: auto_download"}}
+[debug] [2023-01-07T15:38:19.595Z] Ignoring unsupported arg: port {"metadata":{"emulator":{"name":"ui"},"message":"Ignoring unsupported arg: port"}}
+[debug] [2023-01-07T15:38:19.595Z] Starting Emulator UI with command {"binary":"node","args":["--dns-result-order=ipv4first","/home/warren/.cache/firebase/emulators/ui-v1.7.0/server.bundle.js"],"optionalArgs":[],"joinArgs":false} {"metadata":{"emulator":{"name":"ui"},"message":"Starting Emulator UI with command {\"binary\":\"node\",\"args\":[\"--dns-result-order=ipv4first\",\"/home/warren/.cache/firebase/emulators/ui-v1.7.0/server.bundle.js\"],\"optionalArgs\":[],\"joinArgs\":false}"}}
 [info] i  ui: Emulator UI logging to ui-debug.log {"metadata":{"emulator":{"name":"ui"},"message":"Emulator UI logging to \u001b[1mui-debug.log\u001b[22m"}}
-[debug] [2022-12-31T20:28:59.169Z] Web / API server started at 127.0.0.1:9000
+[debug] [2023-01-07T15:38:19.657Z] Web / API server started at 127.0.0.1:9000
  {"metadata":{"emulator":{"name":"ui"},"message":"Web / API server started at 127.0.0.1:9000\n"}}
 [info] 
 ┌─────────────────────────────────────────────────────────────┐
@@ -42,3 +42,19 @@ OpenJDK Runtime Environment (build 17.0.5+8-Ubuntu-2ubuntu120.04)
 
 Issues? Report them at https://github.com/firebase/firebase-tools/issues and attach the *-debug.log files.
  
+[warn] ⚠  Error: Internal state invariant broken: no user with ID: YltkWCp3ycztmJMvJQ1yxsMhge6e
+    at AgentProjectState.getUserByLocalIdAssertingExists (/home/warren/.nvm/versions/node/v16.4.2/lib/node_modules/firebase-tools/lib/emulator/auth/state.js:208:19)
+    at AgentProjectState.validateRefreshToken (/home/warren/.nvm/versions/node/v16.4.2/lib/node_modules/firebase-tools/lib/emulator/auth/state.js:295:24)
+    at grantToken (/home/warren/.nvm/versions/node/v16.4.2/lib/node_modules/firebase-tools/lib/emulator/auth/operations.js:1212:38)
+    at Proxy.<anonymous> (/home/warren/.nvm/versions/node/v16.4.2/lib/node_modules/firebase-tools/lib/emulator/auth/server.js:375:20)
+    at /home/warren/.nvm/versions/node/v16.4.2/lib/node_modules/firebase-tools/node_modules/promise-breaker/index.js:265:46
+    at processTicksAndRejections (node:internal/process/task_queues:96:5) {"metadata":{"emulator":{"name":"auth"},"message":"Error: Internal state invariant broken: no user with ID: YltkWCp3ycztmJMvJQ1yxsMhge6e\n    at AgentProjectState.getUserByLocalIdAssertingExists (/home/warren/.nvm/versions/node/v16.4.2/lib/node_modules/firebase-tools/lib/emulator/auth/state.js:208:19)\n    at AgentProjectState.validateRefreshToken (/home/warren/.nvm/versions/node/v16.4.2/lib/node_modules/firebase-tools/lib/emulator/auth/state.js:295:24)\n    at grantToken (/home/warren/.nvm/versions/node/v16.4.2/lib/node_modules/firebase-tools/lib/emulator/auth/operations.js:1212:38)\n    at Proxy.<anonymous> (/home/warren/.nvm/versions/node/v16.4.2/lib/node_modules/firebase-tools/lib/emulator/auth/server.js:375:20)\n    at /home/warren/.nvm/versions/node/v16.4.2/lib/node_modules/firebase-tools/node_modules/promise-breaker/index.js:265:46\n    at processTicksAndRejections (node:internal/process/task_queues:96:5)"}}
+[warn] ⚠  Received a signed custom token. Auth Emulator does not validate JWTs and IS NOT SECURE {"metadata":{"emulator":{"name":"auth"},"message":"Received a signed custom token. Auth Emulator does not validate JWTs and IS NOT SECURE"}}
+[warn] ⚠  Error: Internal state invariant broken: no user with ID: YZwnrXUryVShqauxorzSz2MfeUB6
+    at AgentProjectState.getUserByLocalIdAssertingExists (/home/warren/.nvm/versions/node/v16.4.2/lib/node_modules/firebase-tools/lib/emulator/auth/state.js:208:19)
+    at AgentProjectState.validateRefreshToken (/home/warren/.nvm/versions/node/v16.4.2/lib/node_modules/firebase-tools/lib/emulator/auth/state.js:295:24)
+    at grantToken (/home/warren/.nvm/versions/node/v16.4.2/lib/node_modules/firebase-tools/lib/emulator/auth/operations.js:1212:38)
+    at Proxy.<anonymous> (/home/warren/.nvm/versions/node/v16.4.2/lib/node_modules/firebase-tools/lib/emulator/auth/server.js:375:20)
+    at /home/warren/.nvm/versions/node/v16.4.2/lib/node_modules/firebase-tools/node_modules/promise-breaker/index.js:265:46
+    at processTicksAndRejections (node:internal/process/task_queues:96:5) {"metadata":{"emulator":{"name":"auth"},"message":"Error: Internal state invariant broken: no user with ID: YZwnrXUryVShqauxorzSz2MfeUB6\n    at AgentProjectState.getUserByLocalIdAssertingExists (/home/warren/.nvm/versions/node/v16.4.2/lib/node_modules/firebase-tools/lib/emulator/auth/state.js:208:19)\n    at AgentProjectState.validateRefreshToken (/home/warren/.nvm/versions/node/v16.4.2/lib/node_modules/firebase-tools/lib/emulator/auth/state.js:295:24)\n    at grantToken (/home/warren/.nvm/versions/node/v16.4.2/lib/node_modules/firebase-tools/lib/emulator/auth/operations.js:1212:38)\n    at Proxy.<anonymous> (/home/warren/.nvm/versions/node/v16.4.2/lib/node_modules/firebase-tools/lib/emulator/auth/server.js:375:20)\n    at /home/warren/.nvm/versions/node/v16.4.2/lib/node_modules/firebase-tools/node_modules/promise-breaker/index.js:265:46\n    at processTicksAndRejections (node:internal/process/task_queues:96:5)"}}
+[warn] ⚠  Received a signed custom token. Auth Emulator does not validate JWTs and IS NOT SECURE {"metadata":{"emulator":{"name":"auth"},"message":"Received a signed custom token. Auth Emulator does not validate JWTs and IS NOT SECURE"}}

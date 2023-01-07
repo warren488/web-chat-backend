@@ -26,9 +26,24 @@ async function sendPushFriendRequest({ recipient, from }) {
   })
   return sendPushNotification({ user: receiver, payload })
 }
+
+async function sendPushCallRequest({ toId, fromId, friendship_id }) {
+  const [sender, receiver] = await User.find({
+    $or: [{ _id: toId }, { _id: fromId }]
+  });
+  console.log([sender, receiver]);
+  // const receiver = await User.findById(toId)
+  const payload = JSON.stringify({
+    call: true,
+    title: `Incoming call from ${sender.username}...`,
+    friendship_id
+  })
+  return sendPushNotification({ user: receiver, payload })
+}
+
 async function sendPushMessage(
   user,
-  message, 
+  message,
 ) {
   const { friendship_id, text, media, createdAt, type, url } = message;
   const receiver = await User.findOne(
@@ -83,5 +98,6 @@ async function getUsers(query) {
 module.exports = {
   sendPushMessage,
   sendPushFriendRequest,
-  getUsers
+  getUsers,
+  sendPushCallRequest
 };

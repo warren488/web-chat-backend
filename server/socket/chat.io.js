@@ -1,11 +1,12 @@
 let User = require("../models/User");
 let Message = require("../models/Message");
 const mongoose = require("mongoose");
-const { sendPushMessage } = require("../services/common");
+const { sendPushMessage, sendPushCallRequest } = require("../services/common");
 const Playlist = require("../models/Playlist");
 const { createPlaylist } = require("../services");
 const async = require("hbs/lib/async");
 const ErrorReport = require("../models/ErrorReport");
+const Signal = require("../models/Signal");
 
 module.exports = async function ioconnection(io, activeUsers, status) {
   if (status.attached) {
@@ -13,6 +14,28 @@ module.exports = async function ioconnection(io, activeUsers, status) {
   }
   io.on("connection", async socket => {
     console.log(`new socket ${socket.id}, active users`, activeUsers);
+    socket.removeAllListeners()
+    // io.clients((err, clients) => {
+    //   console.log(err, clients);
+    // })
+
+    socket.on("readyForSignals", ({ data: user }) => {
+      socket.join(user.id)
+      // get missed signals
+      Signal.getUserSignals(user.id).then(signals => {
+        console.log("--------------------------", signals);
+        signals.forEach(signal => {
+          if (signal.valid) {
+            // console.log(signal);
+            io.to(user.id).emit(signal.eventName, signal.eventData)
+          } else if (signal.eventName === "call") {
+            // console.log(signal);
+            io.to(user.id).emit("missedCall", signal.eventData)
+          }
+        })
+      })
+
+    })
 
     // very important that we use the function parameters ince and then throw them away
     // for any additional processing (or store in global variable)
@@ -20,7 +43,6 @@ module.exports = async function ioconnection(io, activeUsers, status) {
     /**may need to make this more generic (just for registering user as active) and have
      * one simply for adding the user to the individual chat channel
      * */
-
     socket.on("checkin", async function checkin(
       { token, friendship_id, userId },
       callback
@@ -203,21 +225,41 @@ module.exports = async function ioconnection(io, activeUsers, status) {
       io.to(data.friendship_id).emit("playVideo", { ...data, sessionUid })
     });
     socket.on("peerIdForCall", async function peerIdForCall({ token, data }, cb) {
+      Signal.staleSignal(data.callId)
       io.to(data.friendship_id).emit("peerIdForCall", data)
     });
-    socket.on("callBusy", async function callBusy({ token, data }, cb) {
-      io.to(data.friendship_id).emit("callBusy", data)
-    });
     socket.on("callDeclined", async function callDeclined({ token, data }, cb) {
+      Signal.staleSignal(data.callId)
       io.to(data.friendship_id).emit("callDeclined", data)
     });
+    socket.on("callBusy", async function callBusy({ token, data }, cb) {
+      Signal.inValidateSignal(data.callId)
+      io.to(data.friendship_id).emit("callBusy", data)
+    });
     socket.on("endCall", async function endCall({ token, data }, cb) {
-      console.log("endCall", data);
+      Signal.inValidateSignal(data.callId)
       io.to(data.friendship_id).emit("endCall", data)
     });
     socket.on("call", async function call({ token, data }, cb) {
+      const { userId, friendId, friendship_id } = data
       console.log(data);
-      io.to(data.friendship_id).emit("call", data)
+      const signalId = mongoose.Types.ObjectId()
+
+      const signal = new Signal({
+        _id: signalId,
+        userId: friendId,
+        friendship_id,
+        seen: false,
+        valid: true,
+        createdAt: Date.now(),
+        eventName: "call",
+        eventData: { ...data, _id: signalId }
+      })
+      await signal.save().then(() => {
+        return sendPushCallRequest({ toId: friendId, fromId: userId, friendship_id })
+      })
+      io.to(friendship_id).emit("call", { ...data, _id: signalId })
+      cb(null, signalId)
     });
     socket.on("nextVideo", async function nextVideo({ token, data, sessionUid }, cb) {
       io.to(data.friendship_id).emit("nextVideo", { ...data, sessionUid })
