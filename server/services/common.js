@@ -28,17 +28,16 @@ async function sendPushFriendRequest({ recipient, from }) {
 }
 
 async function sendPushCallRequest({ toId, fromId, friendship_id }) {
-  const [sender, receiver] = await User.find({
+  const users = await User.find({
     $or: [{ _id: toId }, { _id: fromId }]
   });
-  console.log([sender, receiver]);
   // const receiver = await User.findById(toId)
   const payload = JSON.stringify({
     call: true,
-    title: `Incoming call from ${sender.username}...`,
+    title: `Incoming call from ${users.find(({ id }) => id === fromId).username}...`,
     friendship_id
   })
-  return sendPushNotification({ user: receiver, payload })
+  return sendPushNotification({ user: users.find(({ id }) => id === toId), payload })
 }
 
 async function sendPushMessage(
