@@ -276,6 +276,7 @@ function sendFriendRequest(io, sess) {
     try {
       session = sess || (await mongoose.startSession());
       await session.startTransaction();
+      if (req.user.id === req.body.friendId) return res.status(403).send({message: "you cannot add yourself"});
       [user, requestRecipient] = await req.user.requestFriend(req.body.friendId, { session });
     } catch (error) {
       console.log(error);
@@ -486,7 +487,7 @@ async function previewLink(req, res) {
   try {
     const url = new URL(req.body.url)
     let urlString = req.body.url;
-    if(url.hostname === "youtu.be") {
+    if (url.hostname === "youtu.be") {
       urlString = `https://www.youtube.com/watch?v=${url.pathname.substring(1)}`
     }
     const html = await getPromise(urlString);
