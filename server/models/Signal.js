@@ -24,11 +24,15 @@ let SignalSchema = new mongoose.Schema({
   createdAt: {
     type: Number,
     required: true,
-    index: true
   },
   valid: {
     type: Boolean,
     required: true,
+  },
+  validUntil: {
+    type: Number,
+    required: true,
+    index: true
   },
   seen: {
     type: Boolean,
@@ -60,7 +64,7 @@ async function getUserSignals(user_id) {
   const signals = await Signal.find(
     {
       userId: user_id,
-      seen: false
+      seen: false,
     },
   );
   await Signal.updateMany({
@@ -76,6 +80,13 @@ async function getUserSignals(user_id) {
       seen: false,
       valid: false,
       eventName: "call"
+    }, {
+      userId: user_id,
+      seen: false,
+      valid: true,
+      validUntil: {
+        $lte: Date.now()
+      }
     }]
   }, {
     $set: {

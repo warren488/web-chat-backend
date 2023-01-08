@@ -23,13 +23,10 @@ module.exports = async function ioconnection(io, activeUsers, status) {
       socket.join(user.id)
       // get missed signals
       Signal.getUserSignals(user.id).then(signals => {
-        console.log("--------------------------", signals);
         signals.forEach(signal => {
-          if (signal.valid) {
-            // console.log(signal);
+          if (signal.valid && signal.validUntil > Date.now()) {
             io.to(user.id).emit(signal.eventName, signal.eventData)
           } else if (signal.eventName === "call") {
-            // console.log(signal);
             io.to(user.id).emit("missedCall", signal.eventData)
           }
         })
@@ -241,7 +238,7 @@ module.exports = async function ioconnection(io, activeUsers, status) {
       io.to(data.friendship_id).emit("endCall", data)
     });
     socket.on("call", async function call({ token, data }, cb) {
-      const { userId, friendId, friendship_id } = data
+      const { userId, friendId, friendship_id, ttl } = data
       console.log(data);
       const signalId = mongoose.Types.ObjectId()
 
@@ -251,6 +248,7 @@ module.exports = async function ioconnection(io, activeUsers, status) {
         friendship_id,
         seen: false,
         valid: true,
+        validUntil: Date.now() + ttl,
         createdAt: Date.now(),
         eventName: "call",
         eventData: { ...data, _id: signalId }
