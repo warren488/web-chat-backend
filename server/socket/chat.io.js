@@ -254,7 +254,7 @@ module.exports = async function ioconnection(io, activeUsers, status) {
         eventData: { ...data, _id: signalId }
       })
       await signal.save().then(() => {
-        return sendPushCallRequest({ toId: friendId, fromId: userId, friendship_id })
+        return sendPushCallRequest({ toId: friendId, fromId: userId, friendship_id, _id: signalId })
       })
       io.to(friendship_id).emit("call", { ...data, _id: signalId })
       cb(null, signalId)

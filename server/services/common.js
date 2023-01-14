@@ -22,12 +22,13 @@ async function sendPushFriendRequest({ recipient, from }) {
   const payload = JSON.stringify({
     request: true,
     title: "New friend request",
-    text: `from ${from.username}`
+    text: `from ${from.username}`,
+    _id: from._id
   })
   return sendPushNotification({ user: receiver, payload })
 }
 
-async function sendPushCallRequest({ toId, fromId, friendship_id }) {
+async function sendPushCallRequest({ toId, fromId, friendship_id, _id }) {
   const users = await User.find({
     $or: [{ _id: toId }, { _id: fromId }]
   });
@@ -35,7 +36,8 @@ async function sendPushCallRequest({ toId, fromId, friendship_id }) {
   const payload = JSON.stringify({
     call: true,
     title: `Incoming call from ${users.find(({ id }) => id === fromId).username}...`,
-    friendship_id
+    friendship_id,
+    _id
   })
   return sendPushNotification({ user: users.find(({ id }) => id === toId), payload })
 }
@@ -44,7 +46,7 @@ async function sendPushMessage(
   user,
   message,
 ) {
-  const { friendship_id, text, media, createdAt, type, url } = message;
+  const { friendship_id, text, media, createdAt, type, url, _id } = message;
   const receiver = await User.findOne(
     {
       friends: {
@@ -62,8 +64,7 @@ async function sendPushMessage(
     friendship_id,
     url,
     createdAt,
-    // redundant but for now we need it 
-    message
+    _id: message.msgId
   });
   return sendPushNotification({ user: receiver, payload })
 }

@@ -276,7 +276,7 @@ function sendFriendRequest(io, sess) {
     try {
       session = sess || (await mongoose.startSession());
       await session.startTransaction();
-      if (req.user.id === req.body.friendId) return res.status(403).send({message: "you cannot add yourself"});
+      if (req.user.id === req.body.friendId) return res.status(403).send({ message: "you cannot add yourself" });
       [user, requestRecipient] = await req.user.requestFriend(req.body.friendId, { session });
     } catch (error) {
       console.log(error);
@@ -309,7 +309,7 @@ function sendFriendRequest(io, sess) {
     io.to(req.body.friendId).emit("newFriendRequest", {
       username: req.user.toJSON().username,
       eventData: event.toJSON(),
-      ...sentRequest
+      ...(sentRequest.toJSON())
     });
     sendPushFriendRequest({ recipient: { _id: req.body.friendId }, from: req.user })
 
@@ -334,7 +334,6 @@ async function getFriends(req, res) {
     }
     return (friendshipB.lastMessage[0].createdAt || 0) - (friendshipA.lastMessage[0].createdAt || 0)
   })
-  console.log(myFriendShips.lastMessage);
   return res.status(200).send(myFriendShips);
 }
 

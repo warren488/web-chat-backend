@@ -490,7 +490,8 @@ function toJSON() {
     imgUrl: user.imgUrl,
     status: user.status,
     location: user.location,
-    interactions: user.interactions
+    interactions: user.interactions,
+    pushEnabled: user.pushEnabled,
   };
 }
 
