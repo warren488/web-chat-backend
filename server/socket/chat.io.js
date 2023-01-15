@@ -132,12 +132,18 @@ module.exports = async function ioconnection(io, activeUsers, status) {
     });
 
     socket.on("getPlaylists", async function getPlaylists({ token }, cb) {
-      let user = await User.findByToken(token)
-      if (!user || !user.playlists || user.playlists.length === 0) {
-        return cb(null, [])
+      try {
+        let user = await User.findByToken(token)
+        if (!user || !user.playlists || user.playlists.length === 0) {
+          return cb(null, [])
+        }
+        let playlists = await Playlist.getPlaylists(user.playlists)
+        cb(null, playlists)
+      } catch (error) {
+        cb(error)
+        console.log(error);
+
       }
-      let playlists = await Playlist.getPlaylists(user.playlists)
-      cb(null, playlists)
     })
     socket.on("addVideoToPlaylist", async function addVideoToPlaylist({ token, data }, cb) {
       try {
