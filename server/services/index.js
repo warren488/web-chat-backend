@@ -350,6 +350,7 @@ async function searchUser(req, res) {
       return res.status(200).send({ exists: false });
     }
   } catch (e) {
+    console.log(e);
     res.status(500).send({ message: "error searching for user" });
   }
 }
