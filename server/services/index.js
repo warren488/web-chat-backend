@@ -418,12 +418,6 @@ async function getMe(req, res) {
   res.status(200).send(req.user);
 }
 
-// TODO: eventually remove after the frontend uses direct links
-async function chatRedirect(req, res) {
-  fid = req.body.friendship_id.toString();
-  return res.status(278).send({ redirect: "/users/me/" + fid });
-}
-
 async function getMessages(req, res) {
   try {
     let {
@@ -587,7 +581,6 @@ module.exports = {
   generateUserFirebaseToken,
   getLastMessage,
   getFriends,
-  chatRedirect,
   getMessages,
   createUser,
   login,

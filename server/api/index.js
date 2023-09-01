@@ -18,7 +18,6 @@ let {
   logout,
   addFriend,
   getFriends,
-  chatRedirect,
   crashReport,
   getMessages,
   getChatPage,

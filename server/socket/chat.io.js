@@ -228,24 +228,28 @@ module.exports = async function ioconnection(io, activeUsers, status) {
       io.to(data.friendship_id).emit("playVideo", { ...data, sessionUid })
     });
     socket.on("peerIdForCall", async function peerIdForCall({ token, data }, cb) {
+      console.log("received peer id for call: " + data.callId);
       Signal.staleSignal(data.callId)
       io.to(data.friendship_id).emit("peerIdForCall", data)
     });
     socket.on("callDeclined", async function callDeclined({ token, data }, cb) {
+      console.log("call declined: "+ data.callId);
       Signal.staleSignal(data.callId)
       io.to(data.friendship_id).emit("callDeclined", data)
     });
     socket.on("callBusy", async function callBusy({ token, data }, cb) {
+      console.log("call busy: "+ data.callId);
       Signal.inValidateSignal(data.callId)
       io.to(data.friendship_id).emit("callBusy", data)
     });
     socket.on("endCall", async function endCall({ token, data }, cb) {
+      console.log("end call: "+ data.callId);
       Signal.inValidateSignal(data.callId)
       io.to(data.friendship_id).emit("endCall", data)
     });
     socket.on("call", async function call({ token, data }, cb) {
       const { userId, friendId, friendship_id, ttl } = data
-      console.log(data);
+      console.log("end call: "+ data.callId);
       const signalId = mongoose.Types.ObjectId()
 
       const signal = new Signal({
