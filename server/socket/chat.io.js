@@ -13,7 +13,6 @@ module.exports = async function ioconnection(io, activeUsers, status) {
     return;
   }
   io.on("connection", async socket => {
-    console.log(`new socket ${socket.id}, active users`, activeUsers);
     socket.removeAllListeners()
     // io.clients((err, clients) => {
     //   console.log(err, clients);
