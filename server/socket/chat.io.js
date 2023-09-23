@@ -248,8 +248,8 @@ module.exports = async function ioconnection(io, activeUsers, status) {
     });
     socket.on("call", async function call({ token, data }, cb) {
       const { userId, friendId, friendship_id, ttl } = data
-      console.log("end call: "+ data.callId);
       const signalId = mongoose.Types.ObjectId()
+      console.log("call: "+ signalId);
 
       const signal = new Signal({
         _id: signalId,
