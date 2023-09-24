@@ -212,7 +212,7 @@ module.exports = async function ioconnection(io, activeUsers, status) {
       } catch (error) {
         await session.abortTransaction()
         console.log(error);
-        cb(err, null)
+        cb(error, null)
       }
 
     });
